@@ -28,7 +28,6 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         setContentView(R.layout.activity_main);
 
         mRecyclerView = (RecyclerView)findViewById(R.id.rv);
-//        GridLayoutManager gridLayoutManager = new GridLayoutManager(this,2 );
         LinearLayoutManager gridLayoutManager
                 = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(gridLayoutManager);
