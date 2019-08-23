@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -23,6 +24,8 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
 
     private FilmAdapter mAdapter;
     private static int pageNumber = 1;
+    static boolean isPopularityUsed =true;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,8 +87,6 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                 String[] films = new String[simpleJsonFilmsData.size()];
                 for (int i = 0; i < simpleJsonFilmsData.size(); i++) {
                     films[i] = simpleJsonFilmsData.get(i).getPoster();
-
-
                 }
 
                 return films;
@@ -120,21 +121,18 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.most_popular) {
+        if (id == R.id.most_popular && !isPopularityUsed) {
             mAdapter.setFilmData(null);
-//            setUrl();
+            isPopularityUsed = !isPopularityUsed;
+            new FetchFilmData().execute("1", NetworkUtils.POPULARITY);
             return true;
-        } else if (id == R.id.highest_rated) {
+        } else if (id == R.id.highest_rated && isPopularityUsed) {
             mAdapter.setFilmData(null);
-//            setUrl();
+            isPopularityUsed = !isPopularityUsed;
+            new FetchFilmData().execute("1", NetworkUtils.HIGHEST_RATED);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private void setUrl(String Url) {
-        //TODO set the url
-
     }
 }
