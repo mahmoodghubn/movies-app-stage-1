@@ -2,4 +2,8 @@
     <string name="app_name">popular movies stage 1</string>
     <string name="most_popular">most popular</string>
     <string name="highest_rated">highest rated</string>
+    <string name="vote_average">Vote Average</string>
+    <string name="date">Date</string>
+    <string name="overview">Overview</string>
+    <string name="film_poster">film poster</string>
 </resources>

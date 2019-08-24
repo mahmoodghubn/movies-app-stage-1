@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -60,7 +61,10 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     }
 
     @Override
-    public void onClick(String weatherForDay) {
+    public void onClick(Film oneFilmData) {
+        Intent intent = new Intent(MainActivity.this, DetailActivity.class);
+        intent.putExtra("FilmClass",oneFilmData);
+        MainActivity.this.startActivity(intent);
 
     }
 
