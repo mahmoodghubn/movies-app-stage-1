@@ -16,6 +16,7 @@ import com.example.popularmoviesstage1.model.Film;
 import com.example.popularmoviesstage1.utilities.NetworkUtils;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.example.popularmoviesstage1.FilmAdapter.FilmAdapterOnClickHandler;
@@ -50,7 +51,6 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                 super.onScrollStateChanged(recyclerView, newState);
 
                 if (!recyclerView.canScrollVertically(1)) {
-                    //TODO take sort by from another place
                     pageNumber++;
                     new FetchFilmData().execute(Integer.toString(pageNumber), NetworkUtils.POPULARITY);
 
@@ -65,10 +65,10 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     }
 
     @SuppressLint("StaticFieldLeak")
-    private class FetchFilmData extends AsyncTask<String, Void, String[]> {
+    private class FetchFilmData extends AsyncTask<String, Void, ArrayList<Film>> {
 
         @Override
-        protected String[] doInBackground(String... params) {
+        protected ArrayList<Film> doInBackground(String... params) {
             /* If there's no zip code, there's nothing to look up. */
             if (params.length == 0) {
                 return null;
@@ -82,14 +82,14 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                 String jsonFilmsResponse = NetworkUtils
                         .getResponseFromHttpUrl(filmsRequestUrl);
 
-                List<Film> simpleJsonFilmsData = NetworkUtils
+                ArrayList<Film> simpleJsonFilmsData = NetworkUtils
                         .extractFeatureFromJson(MainActivity.this, jsonFilmsResponse);
-                String[] films = new String[simpleJsonFilmsData.size()];
-                for (int i = 0; i < simpleJsonFilmsData.size(); i++) {
-                    films[i] = simpleJsonFilmsData.get(i).getPoster();
-                }
+//                String[] filmsPosters = new String[simpleJsonFilmsData.size()];
+//                for (int i = 0; i < simpleJsonFilmsData.size(); i++) {
+//                    filmsPosters[i] = simpleJsonFilmsData.get(i).getPoster();
+//                }
 
-                return films;
+                return simpleJsonFilmsData;
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -98,9 +98,9 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         }
 
         @Override
-        protected void onPostExecute(String[] strings) {
-            if (strings != null) {
-                mAdapter.setFilmData(strings);
+        protected void onPostExecute(ArrayList<Film> films) {
+            if (films != null) {
+                mAdapter.setFilmData(films);
             } else {
                 //TODO show error message
             }
