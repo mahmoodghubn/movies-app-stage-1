@@ -13,4 +13,6 @@
     <dimen name="data_marginRight">8dp</dimen>
     <dimen name="data_marginBottom">8dp</dimen>
     <dimen name="data_text_size">16sp</dimen>
+    <dimen name="image_layout_width_in_grid">170dp</dimen>
+    <dimen name="image_layout_height_in_grid">255dp</dimen>
 </resources>
