@@ -2,6 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scrollView2"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".DetailActivity">
@@ -9,76 +10,61 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical" >
-<!--TODO customizing image view for different screen sizes-->
+        android:orientation="vertical">
         <ImageView
             android:id="@+id/film_image"
-            android:layout_width="340dp"
-            android:layout_height="510dp"
-            android:contentDescription="@string/film_poster"/>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/image_style"
+            android:contentDescription="@string/film_poster" />
 
         <TextView
             android:id="@+id/film_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:textSize="20sp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="16dp"/>
+            style="@style/film_title_style"
+            tools:text="title" />
 
         <TextView
+            android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/vote_average"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="16dp"/>
+            style="@style/film_heads_style"
+            android:text="@string/vote_average" />
 
         <TextView
             android:id="@+id/vote_average"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="16dp"/>
+            style="@style/film_data_style"
+            tools:text="@string/vote_average" />
 
         <TextView
+            android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/date"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="16dp"/>
+            style="@style/film_heads_style"
+            android:text="@string/date" />
+
 
         <TextView
             android:id="@+id/date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="16dp"/>
+            style="@style/film_data_style"
+            tools:text="@string/date" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/overview"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="16dp"/>
+            style="@style/film_heads_style"
+            android:text="@string/overview" />
 
         <TextView
             android:id="@+id/overview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginBottom="16dp"/>
+            style="@style/film_data_style"/>
+
     </LinearLayout>
 </ScrollView>

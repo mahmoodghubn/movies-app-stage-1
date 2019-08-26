@@ -7,5 +7,29 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
+    <style name="image_style">
+        <item name="android:layout_margin">@dimen/image_margin</item>
+        <item name="android:adjustViewBounds">true</item>
+    </style>
+    <style name="film_title_style">
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginRight">@dimen/title_marginRight</item>
+        <item name="android:layout_marginLeft">@dimen/title_marginLeft</item>
+        <item name="android:layout_marginBottom">@dimen/title_marginBottom</item>
+        <item name="android:textSize">@dimen/title_text_size</item>
+    </style>
+    <style name="film_heads_style">
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginRight">@dimen/heads_marginRight</item>
+        <item name="android:layout_marginLeft">@dimen/heads_marginLeft</item>
+        <item name="android:layout_marginBottom">@dimen/heads_marginBottom</item>
+        <item name="android:textSize">@dimen/heads_text_size</item>
+    </style>
+    <style name="film_data_style">
+        <item name="android:layout_marginRight">@dimen/data_marginBottom</item>
+        <item name="android:layout_marginLeft">@dimen/data_marginLeft</item>
+        <item name="android:layout_marginBottom">@dimen/data_marginBottom</item>
+        <item name="android:textSize">@dimen/data_text_size</item>
+    </style>
 
 </resources>

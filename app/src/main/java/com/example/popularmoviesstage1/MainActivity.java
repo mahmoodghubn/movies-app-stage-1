@@ -8,7 +8,6 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -18,7 +17,6 @@ import com.example.popularmoviesstage1.utilities.NetworkUtils;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 
 import com.example.popularmoviesstage1.FilmAdapter.FilmAdapterOnClickHandler;
 
@@ -28,23 +26,16 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     private static int pageNumber = 1;
     static boolean isPopularityUsed =true;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.rv);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getApplicationContext(), 2);
-//        LinearLayoutManager gridLayoutManager
-//                = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(gridLayoutManager);
         mRecyclerView.setHasFixedSize(true);
         mAdapter = new FilmAdapter(this);
-
         new FetchFilmData().execute("1", NetworkUtils.POPULARITY);
-        //TODO take the value of sort_by from menu
-//        new FetchFilmData().execute(NetworkUtils.MOST_POPULAR_MOVIES_API);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -88,10 +79,6 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
 
                 ArrayList<Film> simpleJsonFilmsData = NetworkUtils
                         .extractFeatureFromJson(MainActivity.this, jsonFilmsResponse);
-//                String[] filmsPosters = new String[simpleJsonFilmsData.size()];
-//                for (int i = 0; i < simpleJsonFilmsData.size(); i++) {
-//                    filmsPosters[i] = simpleJsonFilmsData.get(i).getPoster();
-//                }
 
                 return simpleJsonFilmsData;
 
@@ -136,7 +123,6 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             new FetchFilmData().execute("1", NetworkUtils.HIGHEST_RATED);
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 }

@@ -17,7 +17,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class NetworkUtils {
@@ -33,7 +32,6 @@ public class NetworkUtils {
     final static String POSTER_PATH = "https://image.tmdb.org/t/p/original";
     private static final String LOG_TAG = NetworkUtils.class.getSimpleName();
     private final static String MOVIES_BASE_URL = "https://api.themoviedb.org/3/discover/movie?" ;
-           // "api_key1bdd3d05d7dbf4ce67ee2abb8f9bfe78language=en-US&page=2&sort_by=popularity.desc";
     private final static String PAGE_NUMBER = "page";
 
 
@@ -95,35 +93,27 @@ public class NetworkUtils {
             // which represents a list of features (or films).
             JSONArray filmsArray = baseJsonResponse.getJSONArray("results");
 
-
             // For each films in the filmsArray, create an {@link films} object
             for (int i = 0; i < filmsArray.length(); i++) {
 
                 // Get a single films at position i within the list of films
                 JSONObject currentFilm = filmsArray.getJSONObject(i);
-
-
                 String posterPath = currentFilm.getString("poster_path");
                 String title = currentFilm.getString("title");
                 String overview = currentFilm.getString("overview");
                 String releaseDate = currentFilm.getString("release_date");
                 String voteAverage = currentFilm.getString("vote_average");
                 if (!posterPath.equals("null")) {
-                    //TODO canceling this section and put a dumuy photo when there is no photo
+                    //TODO canceling this section and put a dummy photo when there is no photo
                     String fullPosterPath = POSTER_PATH + posterPath;
-
                     Film film = new Film(fullPosterPath,title, overview,releaseDate,voteAverage);
-
                     films.add(film);
                 }
-
             }
-
         } catch (JSONException e) {
 
             Log.e("QueryUtils", "Problem parsing the films JSON results", e);
         }
-
         // Return the list of films
         return films;
     }
