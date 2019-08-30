@@ -9,13 +9,23 @@ public class Film implements Serializable {
     private String releaseDate;
     private String voteAverage;
     private String overview;
+    private String id;
 
-    public Film(String poster,String title, String overview, String releaseDate,String voteAverage ){
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public Film(String poster, String title, String overview, String releaseDate, String voteAverage,String id ){
         setPoster(poster);
         setOverview(overview);
         setReleaseDate(releaseDate);
         setTitle(title);
         setVoteAverage(voteAverage);
+        setId(id);
 
     }
     public String getTitle() {

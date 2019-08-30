@@ -65,6 +65,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/film_data_style"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/film_heads_style"
+            android:text="film url" />
+
+        <TextView
+            android:id="@+id/film_url"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/film_data_style"/>
 
     </LinearLayout>
 </ScrollView>

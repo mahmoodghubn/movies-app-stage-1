@@ -31,8 +31,11 @@ public class NetworkUtils {
 
     final static String POSTER_PATH = "https://image.tmdb.org/t/p/original";
     private static final String LOG_TAG = NetworkUtils.class.getSimpleName();
-    private final static String MOVIES_BASE_URL = "https://api.themoviedb.org/3/discover/movie?" ;
+    private final static String MOVIES_BASE_URL = "https://api.themoviedb.org/3/discover/movie?";
     private final static String PAGE_NUMBER = "page";
+
+    private final static String GETTING_MOVIES_KEY_URL = "http://api.themoviedb.org/3/movie/%1$s/videos?";
+    private final static String TRAILER_BASE_URL = "https://www.youtube.com/watch?v=%1$s";
 
 
     /**
@@ -53,6 +56,67 @@ public class NetworkUtils {
             Log.e(LOG_TAG, "Problem building the URL ", e);
         }
         return url;
+    }
+
+    public static URL creatingKeyUrl(String id) {
+        String keyBaseUrl = String.format(GETTING_MOVIES_KEY_URL, id);
+        Uri buildKeyUri = Uri.parse(keyBaseUrl).buildUpon()
+                .appendQueryParameter(API_KEY, API_KEY_NUMBER)
+                .build();
+        URL url = null;
+        try {
+            url = new URL(buildKeyUri.toString());
+        } catch (MalformedURLException e) {
+            Log.e(LOG_TAG, "Problem building the URL ", e);
+        }
+        return url;
+    }
+
+    public static ArrayList<String> extractKeysFromJson(Context context, String keysJSON) {
+        if (TextUtils.isEmpty(keysJSON)) {
+            return null;
+        }
+        ArrayList<String> keys = new ArrayList<>();
+        try {
+
+            // Create a JSONObject from the JSON response string
+            JSONObject baseJsonResponse = new JSONObject(keysJSON);
+
+            // Extract the JSONArray associated with the key called "features",
+            // which represents a list of features (or films).
+            JSONArray keysArray = baseJsonResponse.getJSONArray("results");
+
+            // For each films in the filmsArray, create an {@link films} object
+            for (int i = 0; i < keysArray.length(); i++) {
+
+                // Get a single key at position i within the list of keys
+                JSONObject currentFilm = keysArray.getJSONObject(i);
+                String key = currentFilm.getString("key");
+                keys.add(key);
+
+            }
+        } catch (JSONException e) {
+
+            Log.e("QueryUtils", "Problem parsing the films JSON results", e);
+        }
+        // Return the list of films
+        return keys;
+
+
+    }
+
+    public static URL creatingTrailerUrl(String key) {
+
+        String youtubeUrl = String.format(TRAILER_BASE_URL, key);
+        Uri builtYoutubeUri = Uri.parse(youtubeUrl).buildUpon().build();
+        URL url = null;
+        try {
+            url = new URL(builtYoutubeUri.toString());
+        } catch (MalformedURLException e) {
+            Log.e(LOG_TAG, "Problem building the URL ", e);
+        }
+        return url;
+
     }
 
     public static String getResponseFromHttpUrl(URL url) throws IOException {
@@ -96,17 +160,18 @@ public class NetworkUtils {
             // For each films in the filmsArray, create an {@link films} object
             for (int i = 0; i < filmsArray.length(); i++) {
 
-                // Get a single films at position i within the list of films
+                // Get a single film at position i within the list of films
                 JSONObject currentFilm = filmsArray.getJSONObject(i);
                 String posterPath = currentFilm.getString("poster_path");
                 String title = currentFilm.getString("title");
                 String overview = currentFilm.getString("overview");
                 String releaseDate = currentFilm.getString("release_date");
                 String voteAverage = currentFilm.getString("vote_average");
+                String id = currentFilm.getString("id");
                 if (!posterPath.equals("null")) {
                     //TODO canceling this section and put a dummy photo when there is no photo
                     String fullPosterPath = POSTER_PATH + posterPath;
-                    Film film = new Film(fullPosterPath,title, overview,releaseDate,voteAverage);
+                    Film film = new Film(fullPosterPath, title, overview, releaseDate, voteAverage, id);
                     films.add(film);
                 }
             }
