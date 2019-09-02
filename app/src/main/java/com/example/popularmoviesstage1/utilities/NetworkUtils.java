@@ -105,19 +105,6 @@ public class NetworkUtils {
 
     }
 
-    public static URL creatingTrailerUrl(String key) {
-
-        String youtubeUrl = String.format(TRAILER_BASE_URL, key);
-        Uri builtYoutubeUri = Uri.parse(youtubeUrl).buildUpon().build();
-        URL url = null;
-        try {
-            url = new URL(builtYoutubeUri.toString());
-        } catch (MalformedURLException e) {
-            Log.e(LOG_TAG, "Problem building the URL ", e);
-        }
-        return url;
-
-    }
 
     public static String getResponseFromHttpUrl(URL url) throws IOException {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
