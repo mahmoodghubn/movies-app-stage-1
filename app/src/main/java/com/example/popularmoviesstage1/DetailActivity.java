@@ -29,7 +29,7 @@ public class DetailActivity extends YouTubeBaseActivity  {
     YouTubePlayerView mYoutubePlayerView;
 
     YouTubePlayer.OnInitializedListener mOnInitializedListener;
-    String loadVideo;
+    ArrayList<String > loadVideos;
     Film film;
 
 
@@ -45,7 +45,7 @@ public class DetailActivity extends YouTubeBaseActivity  {
 
             @Override
             public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer youTubePlayer, boolean b) {
-                youTubePlayer.loadVideo(loadVideo);
+                youTubePlayer.loadVideos(loadVideos);
 
             }
 
@@ -72,10 +72,10 @@ public class DetailActivity extends YouTubeBaseActivity  {
         overview.setText(film.getOverview());
     }
 
-    private class FetchTrailer extends AsyncTask<String, Void, String> {
+    private class FetchTrailer extends AsyncTask<String, Void,ArrayList<String> > {
 
         @Override
-        protected String doInBackground(String... params) {
+        protected ArrayList<String> doInBackground(String... params) {
             /* If there's no zip code, there's nothing to look up. */
             if (params.length == 0) {
                 return null;
@@ -92,8 +92,8 @@ public class DetailActivity extends YouTubeBaseActivity  {
                 ArrayList<String> simpleJsonKeysData = NetworkUtils
                         .extractKeysFromJson(DetailActivity.this, jsonKeysResponse);
 
-                youtubeUrl = simpleJsonKeysData.get(0);
-                return youtubeUrl;
+                //youtubeUrl = simpleJsonKeysData.get(0);
+                return simpleJsonKeysData;
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -101,9 +101,9 @@ public class DetailActivity extends YouTubeBaseActivity  {
         }
 
         @Override
-        protected void onPostExecute(String trailerUrl){
+        protected void onPostExecute(ArrayList<String> trailerUrl){
             if (trailerUrl != null) {
-                loadVideo = trailerUrl;
+                loadVideos = trailerUrl;
                 mYoutubePlayerView.initialize(YOUTUBE_API_KEY,mOnInitializedListener);
 
             } else {
