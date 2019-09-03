@@ -1,3 +1,4 @@
+
 package com.example.popularmoviesstage1;
 
 import android.os.AsyncTask;
@@ -16,7 +17,7 @@ import com.squareup.picasso.Picasso;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class DetailActivity extends YouTubeBaseActivity {
+public class DetailActivity extends YouTubeBaseActivity  {
 
     public static final String YOUTUBE_API_KEY = "AIzaSyD51qd_0eGvR-YJpM9hwDnd5U9wHiH-ZTM";
 
@@ -27,7 +28,7 @@ public class DetailActivity extends YouTubeBaseActivity {
     TextView voteAverage;
     YouTubePlayerView mYoutubePlayerView;
 
-        YouTubePlayer.OnInitializedListener mOnInitializedListener;
+    YouTubePlayer.OnInitializedListener mOnInitializedListener;
     String loadVideo;
     Film film;
 
@@ -36,8 +37,9 @@ public class DetailActivity extends YouTubeBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
-        imageView = findViewById(R.id.film_image);
+
         mYoutubePlayerView = (YouTubePlayerView)findViewById(R.id.youtube_player_view);
+        imageView = findViewById(R.id.film_image);
         mOnInitializedListener = new YouTubePlayer.OnInitializedListener(){
 
 
@@ -54,6 +56,7 @@ public class DetailActivity extends YouTubeBaseActivity {
         };
 
         film = (Film) getIntent().getSerializableExtra("FilmClass");
+        new FetchTrailer().execute(film.getId());
 
         String filmUrl = film.getPoster();
         Picasso.with(this)
@@ -67,7 +70,6 @@ public class DetailActivity extends YouTubeBaseActivity {
         date.setText(film.getReleaseDate());
         overview = findViewById(R.id.overview);
         overview.setText(film.getOverview());
-        new FetchTrailer().execute(film.getId());
     }
 
     private class FetchTrailer extends AsyncTask<String, Void, String> {
@@ -109,5 +111,4 @@ public class DetailActivity extends YouTubeBaseActivity {
             }
         }
     }
-
 }
