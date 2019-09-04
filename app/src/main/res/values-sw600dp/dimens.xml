@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <dimen name="image_layout_width_in_grid">274dp</dimen>
-    <dimen name="image_layout_height_in_grid">420dp</dimen>
 </resources>

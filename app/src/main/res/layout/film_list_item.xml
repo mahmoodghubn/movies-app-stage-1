@@ -2,8 +2,9 @@
 
 <ImageView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/iv_item"
-    android:layout_width="@dimen/image_layout_width_in_grid"
-    android:layout_height="@dimen/image_layout_height_in_grid"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:adjustViewBounds="true"
     android:layout_marginLeft="8dp"
     android:layout_marginBottom="8dp"/>
     <!--TODO customize the photo size for different screen sizes-->
