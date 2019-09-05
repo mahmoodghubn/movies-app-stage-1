@@ -7,4 +7,3 @@
     android:adjustViewBounds="true"
     android:layout_marginLeft="8dp"
     android:layout_marginBottom="8dp"/>
-    <!--TODO customize the photo size for different screen sizes-->

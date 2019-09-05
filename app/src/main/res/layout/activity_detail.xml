@@ -78,6 +78,18 @@
                 style="@style/film_data_style"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
+            <TextView
+                style="@style/film_heads_style"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/users_reviews" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="8dp"
+                android:layout_marginRight="8dp"
+                android:id="@+id/rv2"/>
 
 
         </LinearLayout>

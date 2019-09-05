@@ -22,10 +22,35 @@ import java.util.ArrayList;
 import com.example.popularmoviesstage1.FilmAdapter.FilmAdapterOnClickHandler;
 
 public class MainActivity extends AppCompatActivity implements FilmAdapterOnClickHandler {
+    //TODO accelerating the population of the UI
+    //TODO users reviews
+    //TODO beautifying the detail activity
+    //TODO fixing rotation for main activity to show the place when we rotate the screen
+    //TODO fixing the rotation of the detail activity to start of the part that we left the video before rotation
+    //TODO When a user changes the sort criteria (most popular, highest rated, and favorites) the main view gets updated correctly.
+    //TODO In the movies detail screen, a user can tap a button (for example, a star) to mark it as a Favorite. Tap the button on a favorite movie will unfavorite it.
 
+    /*The titles and IDs of the user’s favorite movies are stored in a native SQLite database and exposed via a ContentProvider
+    OR
+    stored using Room.
+    Data is updated whenever the user favorites or unfavorites a movie. No other persistence libraries are used.*/
+
+    /*When the "favorites" setting option is selected, the main view displays the entire favorites collection based on movie ids stored in the database.
+     */
+
+    /*If Room is used, database is not re-queried unnecessarily. LiveData is used to observe changes in the database and update the UI accordingly.
+     */
+
+    /* If Room is used, database is not re-queried unnecessarily after rotation. Cached LiveData from ViewModel is used instead.
+     */
+
+    /*Suggestions to Make Your Project Stand Out!
+    Extend the favorites database to store the movie poster, synopsis, user rating, and release date, and display them even when offline.
+    Implement sharing functionality to allow the user to share the first trailer’s YouTube URL from the movie details screen.
+    */
     private FilmAdapter mAdapter;
     private static int pageNumber = 1;
-    static boolean isPopularityUsed =true;
+    static boolean isPopularityUsed = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     @Override
     public void onClick(Film oneFilmData) {
         Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-        intent.putExtra("FilmClass",oneFilmData);
+        intent.putExtra("FilmClass", oneFilmData);
         MainActivity.this.startActivity(intent);
 
     }

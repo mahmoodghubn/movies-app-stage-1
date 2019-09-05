@@ -1,10 +1,14 @@
 
 package com.example.popularmoviesstage1;
 
+import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.popularmoviesstage1.model.Film;
 import com.example.popularmoviesstage1.utilities.NetworkUtils;
@@ -16,8 +20,9 @@ import com.squareup.picasso.Picasso;
 
 import java.net.URL;
 import java.util.ArrayList;
+import com.example.popularmoviesstage1.ReviewAdapter.ReviewAdapterOnClickHandler;
 
-public class DetailActivity extends YouTubeBaseActivity  {
+public class DetailActivity extends YouTubeBaseActivity implements ReviewAdapterOnClickHandler {
 
     public static final String YOUTUBE_API_KEY = "AIzaSyD51qd_0eGvR-YJpM9hwDnd5U9wHiH-ZTM";
 
@@ -29,8 +34,10 @@ public class DetailActivity extends YouTubeBaseActivity  {
     YouTubePlayerView mYoutubePlayerView;
 
     YouTubePlayer.OnInitializedListener mOnInitializedListener;
-    ArrayList<String > loadVideos;
+    ArrayList<String> loadVideos;
     Film film;
+    private ReviewAdapter mAdapter;
+
 
 
     @Override
@@ -38,9 +45,9 @@ public class DetailActivity extends YouTubeBaseActivity  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
-        mYoutubePlayerView = (YouTubePlayerView)findViewById(R.id.youtube_player_view);
+        mYoutubePlayerView = (YouTubePlayerView) findViewById(R.id.youtube_player_view);
         imageView = findViewById(R.id.film_image);
-        mOnInitializedListener = new YouTubePlayer.OnInitializedListener(){
+        mOnInitializedListener = new YouTubePlayer.OnInitializedListener() {
 
 
             @Override
@@ -56,7 +63,7 @@ public class DetailActivity extends YouTubeBaseActivity  {
         };
 
         film = (Film) getIntent().getSerializableExtra("FilmClass");
-        new FetchTrailer().execute(film.getId());
+        new FetchTrailer().execute(film.getId(), "videos");
 
         String filmUrl = film.getPoster();
         Picasso.with(this)
@@ -70,30 +77,52 @@ public class DetailActivity extends YouTubeBaseActivity  {
         date.setText(film.getReleaseDate());
         overview = findViewById(R.id.overview);
         overview.setText(film.getOverview());
+        RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.rv2);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
+        mRecyclerView.setLayoutManager(linearLayoutManager);
+        mRecyclerView.setHasFixedSize(true);
+        mAdapter = new ReviewAdapter(this);
+        new FetchTrailer().execute(film.getId(),"reviews");
+        mRecyclerView.setAdapter(mAdapter);
+
     }
 
-    private class FetchTrailer extends AsyncTask<String, Void,ArrayList<String> > {
+    @Override
+    public void onClick(String reviewData) {
+
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private class FetchTrailer extends AsyncTask<String, Void, Passed> {
 
         @Override
-        protected ArrayList<String> doInBackground(String... params) {
+        protected Passed doInBackground(String... params) {
             /* If there's no zip code, there's nothing to look up. */
             if (params.length == 0) {
                 return null;
             }
 
-            String youtubeUrl;
             String id = params[0];
-            URL keyUrl = NetworkUtils.creatingKeyUrl(id);
+            String query = params[1];
+            boolean isVideo = query.equals("videos");
+            URL keyUrl = NetworkUtils.creatingKeyUrl(id, query);
+
 
             try {
                 String jsonKeysResponse = NetworkUtils
                         .getResponseFromHttpUrl(keyUrl);
+                ArrayList<String> simpleJsonKeysData;
+                if (isVideo) {
+                    simpleJsonKeysData = NetworkUtils
+                            .extractKeysFromJson(DetailActivity.this, jsonKeysResponse, query);
+                } else {
+                    simpleJsonKeysData = NetworkUtils
+                            .extractKeysFromJson(DetailActivity.this, jsonKeysResponse, query);
 
-                ArrayList<String> simpleJsonKeysData = NetworkUtils
-                        .extractKeysFromJson(DetailActivity.this, jsonKeysResponse);
+                }
 
-                //youtubeUrl = simpleJsonKeysData.get(0);
-                return simpleJsonKeysData;
+
+                return new Passed(isVideo, simpleJsonKeysData);
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -101,14 +130,29 @@ public class DetailActivity extends YouTubeBaseActivity  {
         }
 
         @Override
-        protected void onPostExecute(ArrayList<String> trailerUrl){
-            if (trailerUrl != null) {
-                loadVideos = trailerUrl;
-                mYoutubePlayerView.initialize(YOUTUBE_API_KEY,mOnInitializedListener);
+        protected void onPostExecute(Passed passed) {
+            if (passed.JSONData != null) {
+                if (passed.isVideos) {
+                    loadVideos = passed.JSONData;
+                    mYoutubePlayerView.initialize(YOUTUBE_API_KEY, mOnInitializedListener);
+                }else {
+                    mAdapter.setReviewData(passed.JSONData);
 
+                }
             } else {
                 //TODO show error message
             }
         }
+    }
+
+    private class Passed {
+        boolean isVideos;
+        ArrayList<String> JSONData;
+
+        Passed(boolean isVideos, ArrayList<String> JSONData) {
+            this.isVideos = isVideos;
+            this.JSONData = JSONData;
+        }
+
     }
 }

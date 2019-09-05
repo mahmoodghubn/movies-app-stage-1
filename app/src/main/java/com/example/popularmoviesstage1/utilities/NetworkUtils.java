@@ -22,31 +22,27 @@ import java.util.Scanner;
 public class NetworkUtils {
     final static String API_KEY = "api_key";
     final static String API_KEY_NUMBER = "1bdd3d05d7dbf4ce67ee2abb8f9bfe78";
-    final static String SORT_BY = "sort_by";
-    public final static String POPULARITY = "popularity.desc";
-    public final static String HIGHEST_RATED = "highest_rated.desc";
-    final static String LANGUAGE = "language";
-    final static String EN_US = "en-US";
+    public final static String POPULARITY = "popular";
+    public final static String HIGHEST_RATED = "top_rated";
 
 
     final static String POSTER_PATH = "https://image.tmdb.org/t/p/original";
     private static final String LOG_TAG = NetworkUtils.class.getSimpleName();
-    private final static String MOVIES_BASE_URL = "https://api.themoviedb.org/3/discover/movie?";
+    private final static String MOVIES_BASE_URL = "http://api.themoviedb.org/3/movie/";
     private final static String PAGE_NUMBER = "page";
 
-    private final static String GETTING_MOVIES_KEY_URL = "http://api.themoviedb.org/3/movie/%1$s/videos?";
-    private final static String TRAILER_BASE_URL = "https://www.youtube.com/watch?v=%1$s";
+    private final static String GETTING_MOVIES_KEY_URL = "http://api.themoviedb.org/3/movie/%1$s";
 
 
     /**
      * Returns new URL object from the given string URL.
      */
     public static URL createUrl(String page_number, String sort_by) {
+
         Uri builtUri = Uri.parse(MOVIES_BASE_URL).buildUpon()
+                .appendPath(sort_by)
                 .appendQueryParameter(API_KEY, API_KEY_NUMBER)
-                .appendQueryParameter(LANGUAGE, EN_US)
                 .appendQueryParameter(PAGE_NUMBER, page_number)
-                .appendQueryParameter(SORT_BY, sort_by)
                 .build();
 
         URL url = null;
@@ -58,9 +54,10 @@ public class NetworkUtils {
         return url;
     }
 
-    public static URL creatingKeyUrl(String id) {
+    public static URL creatingKeyUrl(String id,String type) {
         String keyBaseUrl = String.format(GETTING_MOVIES_KEY_URL, id);
         Uri buildKeyUri = Uri.parse(keyBaseUrl).buildUpon()
+                .appendPath(type)
                 .appendQueryParameter(API_KEY, API_KEY_NUMBER)
                 .build();
         URL url = null;
@@ -72,7 +69,8 @@ public class NetworkUtils {
         return url;
     }
 
-    public static ArrayList<String> extractKeysFromJson(Context context, String keysJSON) {
+
+    public static ArrayList<String> extractKeysFromJson(Context context, String keysJSON,String query) {
         if (TextUtils.isEmpty(keysJSON)) {
             return null;
         }
@@ -84,14 +82,23 @@ public class NetworkUtils {
 
             // Extract the JSONArray associated with the key called "features",
             // which represents a list of features (or films).
-            JSONArray keysArray = baseJsonResponse.getJSONArray("results");
+            JSONArray keysArray;
+            keysArray = baseJsonResponse.getJSONArray("results");
+
+
 
             // For each films in the filmsArray, create an {@link films} object
             for (int i = 0; i < keysArray.length(); i++) {
 
                 // Get a single key at position i within the list of keys
                 JSONObject currentFilm = keysArray.getJSONObject(i);
-                String key = currentFilm.getString("key");
+                String key;
+                if (query.equals("videos")) {
+                    key = currentFilm.getString("key");
+                }else {
+                    key = currentFilm.getString("content");
+                }
+
                 keys.add(key);
 
             }

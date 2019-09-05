@@ -6,4 +6,5 @@
     <string name="date">Date</string>
     <string name="overview">Overview</string>
     <string name="film_poster">film poster</string>
+    <string name="users_reviews">users reviews</string>
 </resources>
