@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.view.View.OnClickListener;
 
 import com.example.popularmoviesstage1.model.Film;
+import com.example.popularmoviesstage1.utilities.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
 import androidx.annotation.NonNull;
@@ -61,7 +62,8 @@ public class FilmAdapter extends RecyclerView.Adapter<FilmAdapter.FilmAdapterVie
 
     @Override
     public void onBindViewHolder(@NonNull FilmAdapterViewHolder filmAdapterViewHolder, int position) {
-        String filmUrl = mFilmsData.get(position).getPoster();
+        String poster = mFilmsData.get(position).getPoster();
+        String filmUrl = NetworkUtils.buildPosterUrl(poster,NetworkUtils.w185);
         Picasso.with(context)
                 .load(filmUrl)
                 .into(filmAdapterViewHolder.mFilmImageView);

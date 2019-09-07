@@ -22,16 +22,23 @@ import java.util.Scanner;
 public class NetworkUtils {
     final static String API_KEY = "api_key";
     final static String API_KEY_NUMBER = "1bdd3d05d7dbf4ce67ee2abb8f9bfe78";
+    final static String SORT_BY = "sort_by";
     public final static String POPULARITY = "popular";
     public final static String HIGHEST_RATED = "top_rated";
+    final static String LANGUAGE = "language";
+    final static String EN_US = "en-US";
 
 
-    final static String POSTER_PATH = "https://image.tmdb.org/t/p/original";
+    final static String POSTER_PATH = "https://image.tmdb.org/t/p/";
+    public final static String ORIGINAL = "original";
+    public final static String w185 = "w185";
     private static final String LOG_TAG = NetworkUtils.class.getSimpleName();
-    private final static String MOVIES_BASE_URL = "http://api.themoviedb.org/3/movie/";
+    private final static String MOVIES_BASE_URL = "https://api.themoviedb.org/3/discover/movie?";
+    private final static String MOVIES_BASE_URL2 = "http://api.themoviedb.org/3/movie/";
     private final static String PAGE_NUMBER = "page";
 
     private final static String GETTING_MOVIES_KEY_URL = "http://api.themoviedb.org/3/movie/%1$s";
+    private final static String GETTING_REVIEWS_KEY_URL = "http://api.themoviedb.org/3/movie/%1$s/reviews?";
 
 
     /**
@@ -39,7 +46,7 @@ public class NetworkUtils {
      */
     public static URL createUrl(String page_number, String sort_by) {
 
-        Uri builtUri = Uri.parse(MOVIES_BASE_URL).buildUpon()
+        Uri builtUri = Uri.parse(MOVIES_BASE_URL2).buildUpon()
                 .appendPath(sort_by)
                 .appendQueryParameter(API_KEY, API_KEY_NUMBER)
                 .appendQueryParameter(PAGE_NUMBER, page_number)
@@ -164,7 +171,7 @@ public class NetworkUtils {
                 String id = currentFilm.getString("id");
                 if (!posterPath.equals("null")) {
                     //TODO canceling this section and put a dummy photo when there is no photo
-                    String fullPosterPath = POSTER_PATH + posterPath;
+                    String fullPosterPath =  posterPath;
                     Film film = new Film(fullPosterPath, title, overview, releaseDate, voteAverage, id);
                     films.add(film);
                 }
@@ -175,5 +182,12 @@ public class NetworkUtils {
         }
         // Return the list of films
         return films;
+    }
+    public static String buildPosterUrl(String poster,String width) {
+
+        //        Log.d(TAG, "Building PosterURL (" + poster + ") Final: " + finalPath);
+        Log.i("ssss",POSTER_PATH+width+"/"+poster);
+        return POSTER_PATH + width + "/" + poster;
+
     }
 }

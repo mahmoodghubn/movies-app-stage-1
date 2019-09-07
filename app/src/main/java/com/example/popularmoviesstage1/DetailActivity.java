@@ -65,7 +65,8 @@ public class DetailActivity extends YouTubeBaseActivity implements ReviewAdapter
         film = (Film) getIntent().getSerializableExtra("FilmClass");
         new FetchTrailer().execute(film.getId(), "videos");
 
-        String filmUrl = film.getPoster();
+        String poster = film.getPoster();
+        String filmUrl = NetworkUtils.buildPosterUrl(poster,NetworkUtils.ORIGINAL);
         Picasso.with(this)
                 .load(filmUrl)
                 .into(imageView);
