@@ -19,14 +19,11 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewAdap
     private Context context;
     private ArrayList<String> mReviewsData = new ArrayList<String>();
 
-    private final ReviewAdapterOnClickHandler mClickHandler;
-
     public interface ReviewAdapterOnClickHandler {
         void onClick(String filmData);
     }
 
-    public ReviewAdapter(ReviewAdapterOnClickHandler clickHandler) {
-        mClickHandler = clickHandler;
+    public ReviewAdapter() {
     }
 
     public class ReviewAdapterViewHolder extends RecyclerView.ViewHolder implements OnClickListener {

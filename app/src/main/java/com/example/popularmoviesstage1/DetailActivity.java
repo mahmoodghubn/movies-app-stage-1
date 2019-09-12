@@ -1,4 +1,3 @@
-
 package com.example.popularmoviesstage1;
 
 import android.annotation.SuppressLint;
@@ -37,8 +36,6 @@ public class DetailActivity extends YouTubeBaseActivity implements ReviewAdapter
     ArrayList<String> loadVideos;
     Film film;
     private ReviewAdapter mAdapter;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +79,7 @@ public class DetailActivity extends YouTubeBaseActivity implements ReviewAdapter
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
         mRecyclerView.setLayoutManager(linearLayoutManager);
         mRecyclerView.setHasFixedSize(true);
-        mAdapter = new ReviewAdapter(this);
+        mAdapter = new ReviewAdapter();
         new FetchTrailer().execute(film.getId(),"reviews");
         mRecyclerView.setAdapter(mAdapter);
 
@@ -154,6 +151,5 @@ public class DetailActivity extends YouTubeBaseActivity implements ReviewAdapter
             this.isVideos = isVideos;
             this.JSONData = JSONData;
         }
-
     }
 }

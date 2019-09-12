@@ -19,7 +19,7 @@ import java.util.ArrayList;
 public class FilmAdapter extends RecyclerView.Adapter<FilmAdapter.FilmAdapterViewHolder> {
 
     private Context context;
-    private ArrayList<Film> mFilmsData = new ArrayList<Film>();
+    private ArrayList<Film> mFilmsData = new ArrayList<>();
 
     private final FilmAdapterOnClickHandler mClickHandler;
 
@@ -36,7 +36,7 @@ public class FilmAdapter extends RecyclerView.Adapter<FilmAdapter.FilmAdapterVie
 
         public FilmAdapterViewHolder(View view) {
             super(view);
-            mFilmImageView = (ImageView) view.findViewById(R.id.iv_item);
+            mFilmImageView =  view.findViewById(R.id.iv_item);
             view.setOnClickListener(this);
         }
 
@@ -84,4 +84,5 @@ public class FilmAdapter extends RecyclerView.Adapter<FilmAdapter.FilmAdapterVie
         }
         notifyDataSetChanged();
     }
+
 }

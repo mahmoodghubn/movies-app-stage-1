@@ -8,7 +8,6 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -22,8 +21,6 @@ import java.util.ArrayList;
 import com.example.popularmoviesstage1.FilmAdapter.FilmAdapterOnClickHandler;
 
 public class MainActivity extends AppCompatActivity implements FilmAdapterOnClickHandler {
-    //TODO accelerating the population of the UI
-    //TODO users reviews
     //TODO beautifying the detail activity
     //TODO fixing rotation for main activity to show the place when we rotate the screen
     //TODO fixing the rotation of the detail activity to start of the part that we left the video before rotation
@@ -76,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             }
         });
     }
+
 
     @Override
     public void onClick(Film oneFilmData) {
