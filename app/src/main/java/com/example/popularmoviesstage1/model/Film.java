@@ -32,7 +32,7 @@ public class Film implements Serializable {
         return title;
     }
 
-    public void setTitle(String title) {
+    private void setTitle(String title) {
         this.title = title;
     }
 
@@ -40,7 +40,7 @@ public class Film implements Serializable {
         return releaseDate;
     }
 
-    public void setReleaseDate(String releaseDate) {
+    private void setReleaseDate(String releaseDate) {
         this.releaseDate = releaseDate;
     }
 
@@ -48,7 +48,7 @@ public class Film implements Serializable {
         return voteAverage;
     }
 
-    public void setVoteAverage(String voteAverage) {
+    private void setVoteAverage(String voteAverage) {
         this.voteAverage = voteAverage;
     }
 
@@ -56,17 +56,15 @@ public class Film implements Serializable {
         return overview;
     }
 
-    public void setOverview(String overview) {
+    private void setOverview(String overview) {
         this.overview = overview;
     }
-
-
 
     public String getPoster() {
         return poster;
     }
 
-    public void setPoster(String poster) {
+    private void setPoster(String poster) {
         this.poster = poster;
     }
 }

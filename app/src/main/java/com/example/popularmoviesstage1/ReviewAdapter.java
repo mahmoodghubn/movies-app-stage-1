@@ -16,20 +16,19 @@ import java.util.ArrayList;
 
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewAdapterViewHolder> {
 
-    private Context context;
     private ArrayList<String> mReviewsData = new ArrayList<String>();
 
     public interface ReviewAdapterOnClickHandler {
-        void onClick(String filmData);
+        void onClick(String reviewData);
     }
 
-    public ReviewAdapter() {
+    ReviewAdapter() {
     }
 
     public class ReviewAdapterViewHolder extends RecyclerView.ViewHolder implements OnClickListener {
-        public final TextView mReviewTextView;
+        final TextView mReviewTextView;
 
-        public ReviewAdapterViewHolder(View view) {
+        ReviewAdapterViewHolder(View view) {
             super(view);
             mReviewTextView = (TextView) view.findViewById(R.id.tv_item);
             view.setOnClickListener(this);
@@ -44,7 +43,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewAdap
     @NonNull
     @Override
     public ReviewAdapterViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
-        context = viewGroup.getContext();
+        Context context = viewGroup.getContext();
         int layoutIdForListItem = R.layout.reveiw_list_item;
         LayoutInflater inflater = LayoutInflater.from(context);
         boolean shouldAttachToParentImmediately = false;
@@ -65,7 +64,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewAdap
         return mReviewsData.size();
     }
 
-    public void setReviewData(ArrayList<String> reviewData) {
+    void setReviewData(ArrayList<String> reviewData) {
 
         if (reviewData == null) {
             mReviewsData.clear();

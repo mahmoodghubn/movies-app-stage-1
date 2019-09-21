@@ -5,6 +5,8 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.example.popularmoviesstage1.MainActivity;
+import com.example.popularmoviesstage1.R;
 import com.example.popularmoviesstage1.model.Film;
 
 import org.json.JSONArray;
@@ -21,7 +23,7 @@ import java.util.Scanner;
 
 public class NetworkUtils {
     private final static String API_KEY = "api_key";
-    private final static String API_KEY_NUMBER = "1bdd3d05d7dbf4ce67ee2abb8f9bfe78";
+    private  static String API_KEY_NUMBER ;
     public final static String POPULARITY = "popular";
     public final static String HIGHEST_RATED = "top_rated";
 
@@ -39,8 +41,9 @@ public class NetworkUtils {
     /**
      * Returns new URL object from the given string URL.
      */
-    public static URL createUrl(String page_number, String sort_by) {
+    public static URL createUrl(Context context,String page_number, String sort_by) {
 
+        API_KEY_NUMBER = context.getString(R.string.films_api);
         Uri builtUri = Uri.parse(MOVIES_BASE_URL).buildUpon()
                 .appendPath(sort_by)
                 .appendQueryParameter(API_KEY, API_KEY_NUMBER)
@@ -56,7 +59,9 @@ public class NetworkUtils {
         return url;
     }
 
-    public static URL creatingKeyUrl(String id,String type) {
+    public static URL creatingKeyUrl(Context context,String id,String type) {
+        API_KEY_NUMBER = context.getString(R.string.films_api);
+
         String keyBaseUrl = String.format(GETTING_MOVIES_KEY_URL, id);
         Uri buildKeyUri = Uri.parse(keyBaseUrl).buildUpon()
                 .appendPath(type)

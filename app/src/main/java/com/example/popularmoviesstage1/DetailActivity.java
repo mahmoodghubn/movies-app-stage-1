@@ -17,13 +17,14 @@ import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerView;
 import com.squareup.picasso.Picasso;
 
+
 import java.net.URL;
 import java.util.ArrayList;
 import com.example.popularmoviesstage1.ReviewAdapter.ReviewAdapterOnClickHandler;
 
 public class DetailActivity extends YouTubeBaseActivity implements ReviewAdapterOnClickHandler {
 
-    public static final String YOUTUBE_API_KEY = "AIzaSyD51qd_0eGvR-YJpM9hwDnd5U9wHiH-ZTM";
+    public static String YOUTUBE_API_KEY ;
 
     ImageView imageView;
     TextView title;
@@ -41,7 +42,7 @@ public class DetailActivity extends YouTubeBaseActivity implements ReviewAdapter
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
-
+        YOUTUBE_API_KEY = this.getString(R.string.youtube_api);
         mYoutubePlayerView = (YouTubePlayerView) findViewById(R.id.youtube_player_view);
         imageView = findViewById(R.id.film_image);
         mOnInitializedListener = new YouTubePlayer.OnInitializedListener() {
@@ -103,7 +104,7 @@ public class DetailActivity extends YouTubeBaseActivity implements ReviewAdapter
             String id = params[0];
             String query = params[1];
             boolean isVideo = query.equals("videos");
-            URL keyUrl = NetworkUtils.creatingKeyUrl(id, query);
+            URL keyUrl = NetworkUtils.creatingKeyUrl(DetailActivity.this,id, query);
 
 
             try {

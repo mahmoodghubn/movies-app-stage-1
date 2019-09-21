@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="youtube_api">YOUTUBE_API</string>
+    <string name="films_api">IMDb_API</string>
+</resources>

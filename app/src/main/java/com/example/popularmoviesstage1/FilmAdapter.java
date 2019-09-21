@@ -27,14 +27,14 @@ public class FilmAdapter extends RecyclerView.Adapter<FilmAdapter.FilmAdapterVie
         void onClick(Film filmData);
     }
 
-    public FilmAdapter(FilmAdapterOnClickHandler clickHandler) {
+    FilmAdapter(FilmAdapterOnClickHandler clickHandler) {
         mClickHandler = clickHandler;
     }
 
     public class FilmAdapterViewHolder extends RecyclerView.ViewHolder implements OnClickListener {
-        public final ImageView mFilmImageView;
+        final ImageView mFilmImageView;
 
-        public FilmAdapterViewHolder(View view) {
+        FilmAdapterViewHolder(View view) {
             super(view);
             mFilmImageView =  view.findViewById(R.id.iv_item);
             view.setOnClickListener(this);
@@ -75,14 +75,13 @@ public class FilmAdapter extends RecyclerView.Adapter<FilmAdapter.FilmAdapterVie
         return mFilmsData.size();
     }
 
-    public void setFilmData(ArrayList<Film> filmData) {
+    void setFilmData(ArrayList<Film> filmData) {
 
         if (filmData == null) {
             mFilmsData.clear();
         } else {
-            mFilmsData.addAll(filmData);
+            mFilmsData = filmData;
         }
         notifyDataSetChanged();
     }
-
 }

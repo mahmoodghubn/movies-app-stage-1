@@ -1,18 +1,27 @@
 package com.example.popularmoviesstage1;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.AsyncTaskLoader;
+import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.TextView;
 
 import com.example.popularmoviesstage1.model.Film;
+import com.example.popularmoviesstage1.model.PageNumber;
+import com.example.popularmoviesstage1.model.PageNumber.*;
 import com.example.popularmoviesstage1.utilities.NetworkUtils;
 
 import java.net.URL;
@@ -20,9 +29,11 @@ import java.util.ArrayList;
 
 import com.example.popularmoviesstage1.FilmAdapter.FilmAdapterOnClickHandler;
 
-public class MainActivity extends AppCompatActivity implements FilmAdapterOnClickHandler {
+public class MainActivity extends AppCompatActivity implements FilmAdapterOnClickHandler
+        , LoaderManager.LoaderCallbacks<ArrayList<Film>> {
+    //TODO beautifying decorate the page buttons
+    //TODO change the layout of landscape mode for the main view
     //TODO beautifying the detail activity
-    //TODO fixing rotation for main activity to show the place when we rotate the screen
     //TODO fixing the rotation of the detail activity to start of the part that we left the video before rotation
     //TODO When a user changes the sort criteria (most popular, highest rated, and favorites) the main view gets updated correctly.
     //TODO In the movies detail screen, a user can tap a button (for example, a star) to mark it as a Favorite. Tap the button on a favorite movie will unfavorite it.
@@ -45,30 +56,80 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     Extend the favorites database to store the movie poster, synopsis, user rating, and release date, and display them even when offline.
     Implement sharing functionality to allow the user to share the first trailer’s YouTube URL from the movie details screen.
     */
+    ImageButton nextPage;
+    ImageButton previousPage;
+    TextView thisPage;
+
     private FilmAdapter mAdapter;
-    private static int pageNumber = 1;
-    static boolean isPopularityUsed = true;
+    private PageNumber pageNumber;
+    private String sort = NetworkUtils.POPULARITY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.rv);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getApplicationContext(), 2);
+        thisPage = (TextView) findViewById(R.id.page_number);
+        pageNumber = new PageNumber(null,null);
+
+        if (savedInstanceState !=null) {
+            pageNumber = (PageNumber) savedInstanceState.getSerializable("pageNumber");
+            thisPage.setText(""+pageNumber.getCurrentPageNumber());
+        }
+        previousPage = findViewById(R.id.ic_left);
+        nextPage = findViewById(R.id.ic_right);
+
+        RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        RecyclerView.LayoutManager gridLayoutManager = new GridLayoutManager(getApplicationContext(), 2);
         mRecyclerView.setLayoutManager(gridLayoutManager);
         mRecyclerView.setHasFixedSize(true);
         mAdapter = new FilmAdapter(this);
-        new FetchFilmData().execute("1", NetworkUtils.POPULARITY);
+        Bundle filmBundle = new Bundle();
+        filmBundle.putSerializable("pageNumber", pageNumber);
+        LoaderManager loaderManager = LoaderManager.getInstance(this);
+        Loader<ArrayList<Film>> loader = loaderManager.getLoader(pageNumber.getCurrentPageNumber());
+        if (loader == null) {
+            loaderManager.initLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
+        } else {
+            loaderManager.restartLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
+        }
+
         mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        nextPage.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("DefaultLocale")
             @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
+            public void onClick(View view) {
+                int previousPageNumber = Integer.parseInt(thisPage.getText().toString());
+                thisPage.setText(String.format("%d", ++previousPageNumber));
+                Bundle filmBundle = new Bundle();
+                pageNumber = new PageNumber(null,previousPageNumber);
 
-                if (!recyclerView.canScrollVertically(1)) {
-                    pageNumber++;
-                    new FetchFilmData().execute(Integer.toString(pageNumber), NetworkUtils.POPULARITY);
-
+                filmBundle.putSerializable("pageNumber", pageNumber);
+                filmBundle.putString("sortType", sort);
+                LoaderManager loaderManager = LoaderManager.getInstance(MainActivity.this);
+                Loader<ArrayList<Film>> loader = loaderManager.getLoader(pageNumber.getCurrentPageNumber());
+                if (loader == null) {
+                    loaderManager.initLoader(pageNumber.getCurrentPageNumber(), filmBundle, MainActivity.this);
+                } else {
+                    loaderManager.restartLoader(pageNumber.getCurrentPageNumber(), filmBundle, MainActivity.this);
+                }
+            }
+        });
+        previousPage.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("DefaultLocale")
+            @Override
+            public void onClick(View view) {
+                int previousPageNumber = Integer.parseInt(thisPage.getText().toString());
+                if (previousPageNumber != 1)
+                    thisPage.setText(String.format("%d", --previousPageNumber));
+                pageNumber = new PageNumber(null,previousPageNumber);
+                Bundle filmBundle = new Bundle();
+                filmBundle.putSerializable("pageNumber", pageNumber);
+                LoaderManager loaderManager = LoaderManager.getInstance(MainActivity.this);
+                Loader<ArrayList<Film>> loader = loaderManager.getLoader(pageNumber.getCurrentPageNumber());
+                if (loader == null) {
+                    loaderManager.initLoader(pageNumber.getCurrentPageNumber(), filmBundle, MainActivity.this);
+                } else {
+                    loaderManager.restartLoader(pageNumber.getCurrentPageNumber(), filmBundle, MainActivity.this);
                 }
             }
         });
@@ -83,43 +144,51 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
 
     }
 
-    @SuppressLint("StaticFieldLeak")
-    private class FetchFilmData extends AsyncTask<String, Void, ArrayList<Film>> {
-
-        @Override
-        protected ArrayList<Film> doInBackground(String... params) {
-            /* If there's no zip code, there's nothing to look up. */
-            if (params.length == 0) {
-                return null;
+    @NonNull
+    @Override
+    public Loader<ArrayList<Film>> onCreateLoader(int id, @Nullable final Bundle args) {
+        return new AsyncTaskLoader<ArrayList<Film>>(this) {
+            @Override
+            protected void onStartLoading() {
+                super.onStartLoading();
+                forceLoad();
             }
 
-            String pageNumber = params[0];
-            String sort_by = params[1];
-            URL filmsRequestUrl = NetworkUtils.createUrl(pageNumber, sort_by);
+            @Nullable
+            @Override
+            public ArrayList<Film> loadInBackground() {
+                PageNumber pageNumber = (PageNumber) args.getSerializable("pageNumber");
+                URL filmsRequestUrl = NetworkUtils.createUrl(MainActivity.this,String.valueOf(pageNumber.getCurrentPageNumber()), pageNumber.getCurrentPageSort());
 
-            try {
-                String jsonFilmsResponse = NetworkUtils
-                        .getResponseFromHttpUrl(filmsRequestUrl);
+                try {
+                    String jsonFilmsResponse = NetworkUtils
+                            .getResponseFromHttpUrl(filmsRequestUrl);
 
-                ArrayList<Film> simpleJsonFilmsData = NetworkUtils
-                        .extractFeatureFromJson(MainActivity.this, jsonFilmsResponse);
+                    return NetworkUtils
+                            .extractFeatureFromJson(MainActivity.this, jsonFilmsResponse);
 
-                return simpleJsonFilmsData;
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
             }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<ArrayList<Film>> loader, ArrayList<Film> data) {
+
+        if (data != null) {
+            mAdapter.setFilmData(data);
+
+        } else {
+            //TODO show error message
         }
+    }
 
-        @Override
-        protected void onPostExecute(ArrayList<Film> films) {
-            if (films != null) {
-                mAdapter.setFilmData(films);
-            } else {
-                //TODO show error message
-            }
-        }
+    @Override
+    public void onLoaderReset(@NonNull Loader<ArrayList<Film>> loader) {
+
     }
 
     @Override
@@ -133,18 +202,43 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable("pageNumber",pageNumber);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.most_popular && !isPopularityUsed) {
+        if (id == R.id.most_popular && pageNumber.getCurrentPageSort().equals(NetworkUtils.HIGHEST_RATED)) {
             mAdapter.setFilmData(null);
-            isPopularityUsed = !isPopularityUsed;
-            new FetchFilmData().execute("1", NetworkUtils.POPULARITY);
+            pageNumber = new PageNumber(PageType.POPULARITY,null);
+            Bundle filmBundle = new Bundle();
+            filmBundle.putSerializable("pageNumber", pageNumber);
+            LoaderManager loaderManager = LoaderManager.getInstance(this);
+            Loader<ArrayList<Film>> loader = loaderManager.getLoader(pageNumber.getCurrentPageNumber());
+            if (loader == null) {
+                loaderManager.initLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
+            } else {
+                loaderManager.restartLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
+            }
+            thisPage.setText("" + pageNumber.getCurrentPageNumber());
             return true;
-        } else if (id == R.id.highest_rated && isPopularityUsed) {
+        } else if (id == R.id.highest_rated && pageNumber.getCurrentPageSort().equals(NetworkUtils.POPULARITY)) {
+
             mAdapter.setFilmData(null);
-            isPopularityUsed = !isPopularityUsed;
-            new FetchFilmData().execute("1", NetworkUtils.HIGHEST_RATED);
+            pageNumber = new PageNumber(PageType.HIGH_RATED,null);
+            Bundle filmBundle = new Bundle();
+            filmBundle.putSerializable("pageNumber", pageNumber);
+            LoaderManager loaderManager = LoaderManager.getInstance(this);
+            Loader<ArrayList<Film>> loader = loaderManager.getLoader(pageNumber.getCurrentPageNumber());
+            if (loader == null) {
+                loaderManager.initLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
+            } else {
+                loaderManager.restartLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
+            }
+            thisPage.setText("" + pageNumber.getCurrentPageNumber());
             return true;
         }
         return super.onOptionsItemSelected(item);
