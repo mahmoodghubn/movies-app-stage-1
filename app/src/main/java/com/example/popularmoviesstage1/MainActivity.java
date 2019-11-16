@@ -11,7 +11,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -28,16 +30,17 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import com.example.popularmoviesstage1.FilmAdapter.FilmAdapterOnClickHandler;
+import com.example.popularmoviesstage1.Data.FilmContract.*;
+
+import static com.example.popularmoviesstage1.Data.FilmContract.FilmEntry.CONTENT_URI;
 
 public class MainActivity extends AppCompatActivity implements FilmAdapterOnClickHandler
         , LoaderManager.LoaderCallbacks<ArrayList<Film>> {
     //TODO beautifying decorate the page buttons
     //TODO change the layout of landscape mode for the main view
     //TODO beautifying the detail activity
-    //TODO fixing the rotation of the detail activity to start of the part that we left the video before rotation
-    //TODO When a user changes the sort criteria (most popular, highest rated, and favorites) the main view gets updated correctly.
-    //TODO In the movies detail screen, a user can tap a button (for example, a star) to mark it as a Favorite. Tap the button on a favorite movie will unfavorite it.
-
+    //TODO fixing the rotation of the detail activity to start of the part that
+    //TODO fixing next and previous page button
     /*The titles and IDs of the user’s favorite movies are stored in a native SQLite database and exposed via a ContentProvider
     OR
     stored using Room.
@@ -62,30 +65,38 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
 
     private FilmAdapter mAdapter;
     private PageNumber pageNumber;
+    //the sort of the current page
     private String sort = NetworkUtils.POPULARITY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        thisPage = (TextView) findViewById(R.id.page_number);
-        pageNumber = new PageNumber(null,null);
+        thisPage = findViewById(R.id.page_number);
+        //at first we will start with page number one and popularity type
+        pageNumber = new PageNumber(null, null);
 
-        if (savedInstanceState !=null) {
+        //restoring data after rotation
+        if (savedInstanceState != null) {
             pageNumber = (PageNumber) savedInstanceState.getSerializable("pageNumber");
-            thisPage.setText(""+pageNumber.getCurrentPageNumber());
+            thisPage.setText("" + pageNumber.getCurrentPageNumber());
         }
+        //the arrows for the previous and next page
         previousPage = findViewById(R.id.ic_left);
         nextPage = findViewById(R.id.ic_right);
 
-        RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        RecyclerView mRecyclerView =  findViewById(R.id.recycler_view);
         RecyclerView.LayoutManager gridLayoutManager = new GridLayoutManager(getApplicationContext(), 2);
         mRecyclerView.setLayoutManager(gridLayoutManager);
         mRecyclerView.setHasFixedSize(true);
         mAdapter = new FilmAdapter(this);
+
+        //saving data for rotation
         Bundle filmBundle = new Bundle();
         filmBundle.putSerializable("pageNumber", pageNumber);
+        //the app becomes life cycle aware
         LoaderManager loaderManager = LoaderManager.getInstance(this);
+        //the id of the loader is the same as page number
         Loader<ArrayList<Film>> loader = loaderManager.getLoader(pageNumber.getCurrentPageNumber());
         if (loader == null) {
             loaderManager.initLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
@@ -101,10 +112,13 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                 int previousPageNumber = Integer.parseInt(thisPage.getText().toString());
                 thisPage.setText(String.format("%d", ++previousPageNumber));
                 Bundle filmBundle = new Bundle();
-                pageNumber = new PageNumber(null,previousPageNumber);
+                //calculating the new page number
+                pageNumber = new PageNumber(null, previousPageNumber);
 
+                //saving the current page number in case of rotation
                 filmBundle.putSerializable("pageNumber", pageNumber);
                 filmBundle.putString("sortType", sort);
+                //getting the current page
                 LoaderManager loaderManager = LoaderManager.getInstance(MainActivity.this);
                 Loader<ArrayList<Film>> loader = loaderManager.getLoader(pageNumber.getCurrentPageNumber());
                 if (loader == null) {
@@ -121,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                 int previousPageNumber = Integer.parseInt(thisPage.getText().toString());
                 if (previousPageNumber != 1)
                     thisPage.setText(String.format("%d", --previousPageNumber));
-                pageNumber = new PageNumber(null,previousPageNumber);
+                pageNumber = new PageNumber(null, previousPageNumber);
                 Bundle filmBundle = new Bundle();
                 filmBundle.putSerializable("pageNumber", pageNumber);
                 LoaderManager loaderManager = LoaderManager.getInstance(MainActivity.this);
@@ -157,8 +171,10 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             @Nullable
             @Override
             public ArrayList<Film> loadInBackground() {
+                Log.v("load_in_background","xxxx");
+                //getting the films of the new page
                 PageNumber pageNumber = (PageNumber) args.getSerializable("pageNumber");
-                URL filmsRequestUrl = NetworkUtils.createUrl(MainActivity.this,String.valueOf(pageNumber.getCurrentPageNumber()), pageNumber.getCurrentPageSort());
+                URL filmsRequestUrl = NetworkUtils.createUrl(MainActivity.this, String.valueOf(pageNumber.getCurrentPageNumber()), pageNumber.getCurrentPageSort());
 
                 try {
                     String jsonFilmsResponse = NetworkUtils
@@ -204,16 +220,17 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putSerializable("pageNumber",pageNumber);
+        //saving the current page number after rotation
+        outState.putSerializable("pageNumber", pageNumber);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.most_popular && pageNumber.getCurrentPageSort().equals(NetworkUtils.HIGHEST_RATED)) {
+        if (id == R.id.most_popular && !pageNumber.getCurrentPageSort().equals(NetworkUtils.POPULARITY)) {
             mAdapter.setFilmData(null);
-            pageNumber = new PageNumber(PageType.POPULARITY,null);
+            pageNumber = new PageNumber(PageType.POPULARITY, null);
             Bundle filmBundle = new Bundle();
             filmBundle.putSerializable("pageNumber", pageNumber);
             LoaderManager loaderManager = LoaderManager.getInstance(this);
@@ -225,10 +242,10 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             }
             thisPage.setText("" + pageNumber.getCurrentPageNumber());
             return true;
-        } else if (id == R.id.highest_rated && pageNumber.getCurrentPageSort().equals(NetworkUtils.POPULARITY)) {
+        } else if (id == R.id.highest_rated && !pageNumber.getCurrentPageSort().equals(NetworkUtils.HIGHEST_RATED)) {
 
             mAdapter.setFilmData(null);
-            pageNumber = new PageNumber(PageType.HIGH_RATED,null);
+            pageNumber = new PageNumber(PageType.HIGH_RATED, null);
             Bundle filmBundle = new Bundle();
             filmBundle.putSerializable("pageNumber", pageNumber);
             LoaderManager loaderManager = LoaderManager.getInstance(this);
@@ -240,7 +257,62 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             }
             thisPage.setText("" + pageNumber.getCurrentPageNumber());
             return true;
+        } else if (id == R.id.favorite && !pageNumber.getCurrentPageSort().equals("FAVORITE")) {
+            //TODO get the pages from the database
+//            SQLiteDatabase db = mDbHelper
+            displayDatabaseInfo();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void displayDatabaseInfo() {
+        // Create and/or open a database to read from it
+//        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+
+        String[] projection= {FilmEntry._ID,FilmEntry.COLUMN_FILM_TITLE,FilmEntry.COLUMN_DATE,
+                FilmEntry.COLUMN_VOTE_AVERAGE,FilmEntry.COLUMN_POSTER,FilmEntry.COLUMN_OVERVIEW};
+
+//         FilmDbHelper mDbHelper = new FilmDbHelper(this);
+
+//        SQLiteDatabase database = mDbHelper.getReadableDatabase();
+        Cursor cursor = getContentResolver().query(CONTENT_URI,projection,null,null,
+                null,null);
+        ArrayList<Film> favFilm = new ArrayList<Film>();
+
+//        TextView displayView = (TextView) findViewById(R.id.database);
+
+        try {
+
+
+
+            // Figure out the index of each column
+            int idColumnIndex = cursor.getColumnIndex(FilmEntry._ID);
+            int nameColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_FILM_TITLE);
+            int dateColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_DATE);
+            int averageColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_VOTE_AVERAGE);
+            int posterColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_POSTER);
+            int overviewColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_OVERVIEW);
+
+
+            // Iterate through all the returned rows in the cursor
+            while (cursor.moveToNext()) {
+                // Use that index to extract the String or Int value of the word
+                // at the current row the cursor is on.
+                int currentID = cursor.getInt(idColumnIndex);
+                String currentFilmTitle = cursor.getString(nameColumnIndex);
+                String currentFilmDate = cursor.getString(dateColumnIndex);
+                String currentAverage = cursor.getString(averageColumnIndex);
+                String currentPoster = cursor.getString(posterColumnIndex);
+                String currentOverview = cursor.getString(overviewColumnIndex);
+                favFilm.add(new Film(currentPoster,currentFilmTitle,currentOverview,currentFilmDate,currentAverage,""+currentID));
+
+            }
+        } finally {
+            // Always close the cursor when you're done reading from it. This releases all its
+            // resources and makes it invalid.
+            cursor.close();
+        }
+        mAdapter.setFilmData(favFilm);
     }
 }

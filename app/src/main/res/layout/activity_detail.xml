@@ -30,6 +30,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/film_poster" />
+            <ImageView
+                android:id="@+id/iv_favButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:src="@drawable/ic_favorite_border_black_24dp"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
 
             <TextView
                 android:id="@+id/film_title"
@@ -88,12 +96,12 @@
                 android:layout_height="match_parent"
                 android:orientation= "vertical">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="8dp"
-                android:layout_marginRight="8dp"
-                android:id="@+id/rv2"/>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginRight="8dp"
+                    android:id="@+id/rv2"/>
             </ScrollView>
 
 

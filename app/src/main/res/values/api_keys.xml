@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="youtube_api">YOUTUBE_API</string>
-    <string name="films_api">IMDb_API</string>
+    <string name="youtube_api">AIzaSyD51qd_0eGvR-YJpM9hwDnd5U9wHiH-ZTM</string>
+    <string name="films_api">1bdd3d05d7dbf4ce67ee2abb8f9bfe78</string>
 </resources>

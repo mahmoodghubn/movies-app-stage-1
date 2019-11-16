@@ -9,7 +9,8 @@ import java.io.Serializable;
 public class PageNumber implements Serializable {
     public enum PageType {
         POPULARITY,
-        HIGH_RATED
+        HIGH_RATED,
+        FAVORITE
     }
 
     private static PageType pageSort = PageType.POPULARITY;
@@ -33,16 +34,20 @@ public class PageNumber implements Serializable {
     public  String getCurrentPageSort() {
         if (pageSort == PageType.POPULARITY) {
             return NetworkUtils.POPULARITY;
-        } else {
+        } else if (pageSort == PageType.HIGH_RATED) {
             return NetworkUtils.HIGHEST_RATED;
+        }else {
+            return "FAVORITE";
         }
     }
 
     public  int getCurrentPageNumber() {
         if (pageSort == PageType.POPULARITY) {
             return popularity_page_number;
-        } else {
+        } else if (pageSort == PageType.HIGH_RATED) {
             return high_rated_page_number;
+        }else {
+            return 0;//TODO customize this line for favorite page
         }
     }
 }
