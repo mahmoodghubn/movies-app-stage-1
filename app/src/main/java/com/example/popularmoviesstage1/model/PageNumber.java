@@ -16,6 +16,7 @@ public class PageNumber implements Serializable {
     private static PageType pageSort = PageType.POPULARITY;
     private static Integer high_rated_page_number = 1;
     private static Integer popularity_page_number = 1;
+    private static Integer favorite_page_number = 1;
 
     public PageNumber(@Nullable PageType pageType, @Nullable Integer pageNumber) {
         if (pageType != null) {
@@ -26,6 +27,8 @@ public class PageNumber implements Serializable {
                 popularity_page_number = pageNumber;
             } else if (pageSort == PageType.HIGH_RATED) {
                 high_rated_page_number = pageNumber;
+            }else {
+                favorite_page_number = pageNumber;
             }
         }
     }
@@ -47,7 +50,7 @@ public class PageNumber implements Serializable {
         } else if (pageSort == PageType.HIGH_RATED) {
             return high_rated_page_number;
         }else {
-            return 0;//TODO customize this line for favorite page
+            return favorite_page_number;//TODO customize this line for favorite page
         }
     }
 }

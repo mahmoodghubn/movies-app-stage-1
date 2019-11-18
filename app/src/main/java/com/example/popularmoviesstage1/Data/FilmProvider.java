@@ -43,19 +43,19 @@ public class FilmProvider extends ContentProvider {
             case Film:
                 cursor = database.query(FilmContract.FilmEntry.TABLE_NAME,projection,selection,selectionArgs
                         ,null,null,null);
-                Log.i("xxxx","multiple");
                 break;
             case Film_ID:
                 selection = FilmContract.FilmEntry._ID+"=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
                 cursor = database.query(FilmContract.FilmEntry.TABLE_NAME,projection,selection,selectionArgs
                         ,null,null,sortOrder);
-                Log.i("xxxx","one row");
 
                 break;
             default:
                 throw new IllegalArgumentException("unknown uri");
         }
+        //TODO test this line of code when adding the favorite button to the main activity
+        cursor.setNotificationUri(getContext().getContentResolver(),uri);
         return cursor;
     }
 
@@ -78,6 +78,8 @@ public class FilmProvider extends ContentProvider {
                     Log.e(LOG_TAG, "Failed to insert row for " + uri);
                     return null;
                 }
+                //TODO check if we need the following line of code or not
+                //getContext().getContentResolver().notifyChange(uri,null);
 
                 // Return the new URI with the ID (of the newly inserted row) appended at the end
                 return ContentUris.withAppendedId(uri, id);
@@ -97,6 +99,7 @@ public class FilmProvider extends ContentProvider {
                 if (id == -1) {
                     Log.e(LOG_TAG, "Failed to delete row for " + uri);
                 }
+                getContext().getContentResolver().notifyChange(uri,null);
 
                 // Return the new URI with the ID (of the newly inserted row) appended at the end
                 return id;

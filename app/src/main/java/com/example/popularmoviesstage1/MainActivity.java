@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         previousPage = findViewById(R.id.ic_left);
         nextPage = findViewById(R.id.ic_right);
 
-        RecyclerView mRecyclerView =  findViewById(R.id.recycler_view);
+        RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
         RecyclerView.LayoutManager gridLayoutManager = new GridLayoutManager(getApplicationContext(), 2);
         mRecyclerView.setLayoutManager(gridLayoutManager);
         mRecyclerView.setHasFixedSize(true);
@@ -161,34 +161,91 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     @NonNull
     @Override
     public Loader<ArrayList<Film>> onCreateLoader(int id, @Nullable final Bundle args) {
-        return new AsyncTaskLoader<ArrayList<Film>>(this) {
-            @Override
-            protected void onStartLoading() {
-                super.onStartLoading();
-                forceLoad();
-            }
+        if (!pageNumber.getCurrentPageSort().equals("FAVORITE")) {
 
-            @Nullable
-            @Override
-            public ArrayList<Film> loadInBackground() {
-                Log.v("load_in_background","xxxx");
-                //getting the films of the new page
-                PageNumber pageNumber = (PageNumber) args.getSerializable("pageNumber");
-                URL filmsRequestUrl = NetworkUtils.createUrl(MainActivity.this, String.valueOf(pageNumber.getCurrentPageNumber()), pageNumber.getCurrentPageSort());
-
-                try {
-                    String jsonFilmsResponse = NetworkUtils
-                            .getResponseFromHttpUrl(filmsRequestUrl);
-
-                    return NetworkUtils
-                            .extractFeatureFromJson(MainActivity.this, jsonFilmsResponse);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return null;
+            return new AsyncTaskLoader<ArrayList<Film>>(this) {
+                @Override
+                protected void onStartLoading() {
+                    super.onStartLoading();
+                    forceLoad();
                 }
-            }
-        };
+
+                @Nullable
+                @Override
+                public ArrayList<Film> loadInBackground() {
+                    //getting the films of the new page
+                    PageNumber pageNumber = (PageNumber) args.getSerializable("pageNumber");
+                    URL filmsRequestUrl = NetworkUtils.createUrl(MainActivity.this, String.valueOf(pageNumber.getCurrentPageNumber()), pageNumber.getCurrentPageSort());
+
+                    try {
+                        String jsonFilmsResponse = NetworkUtils
+                                .getResponseFromHttpUrl(filmsRequestUrl);
+
+                        return NetworkUtils
+                                .extractFeatureFromJson(MainActivity.this, jsonFilmsResponse);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
+
+            };
+        } else {
+
+            return new AsyncTaskLoader<ArrayList<Film>>(this) {
+                @Override
+                protected void onStartLoading() {
+                    super.onStartLoading();
+                    forceLoad();
+                }
+                @Nullable
+                @Override
+                public ArrayList<Film> loadInBackground() {
+
+                    String[] projection = {FilmEntry._ID, FilmEntry.COLUMN_FILM_TITLE, FilmEntry.COLUMN_DATE,
+                            FilmEntry.COLUMN_VOTE_AVERAGE, FilmEntry.COLUMN_POSTER, FilmEntry.COLUMN_OVERVIEW};
+
+                    Cursor cursor = getContentResolver().query(CONTENT_URI, projection, null, null,
+                            null, null);
+                    ArrayList<Film> favFilm = new ArrayList<Film>();
+
+
+                    try {
+
+
+                        // Figure out the index of each column
+                        int idColumnIndex = cursor.getColumnIndex(FilmEntry._ID);
+                        int nameColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_FILM_TITLE);
+                        int dateColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_DATE);
+                        int averageColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_VOTE_AVERAGE);
+                        int posterColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_POSTER);
+                        int overviewColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_OVERVIEW);
+
+
+                        // Iterate through all the returned rows in the cursor
+                        while (cursor.moveToNext()) {
+                            // Use that index to extract the String or Int value of the word
+                            // at the current row the cursor is on.
+                            int currentID = cursor.getInt(idColumnIndex);
+                            String currentFilmTitle = cursor.getString(nameColumnIndex);
+                            String currentFilmDate = cursor.getString(dateColumnIndex);
+                            String currentAverage = cursor.getString(averageColumnIndex);
+                            String currentPoster = cursor.getString(posterColumnIndex);
+                            String currentOverview = cursor.getString(overviewColumnIndex);
+                            favFilm.add(new Film(currentPoster, currentFilmTitle, currentOverview, currentFilmDate, currentAverage, "" + currentID));
+
+                        }
+                    } finally {
+                        // Always close the cursor when you're done reading from it. This releases all its
+                        // resources and makes it invalid.
+                        cursor.close();
+                    }
+                    Log.i("xxxx","xxss");
+                    return favFilm;
+                }
+            };
+        }
     }
 
     @Override
@@ -204,6 +261,8 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
 
     @Override
     public void onLoaderReset(@NonNull Loader<ArrayList<Film>> loader) {
+        //preventing memory leaks by using this call
+        mAdapter.setFilmData(null);
 
     }
 
@@ -259,60 +318,20 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             return true;
         } else if (id == R.id.favorite && !pageNumber.getCurrentPageSort().equals("FAVORITE")) {
             //TODO get the pages from the database
-//            SQLiteDatabase db = mDbHelper
-            displayDatabaseInfo();
+            mAdapter.setFilmData(null);
+            pageNumber = new PageNumber(PageType.FAVORITE, null);
+            Bundle filmBundle = new Bundle();
+            filmBundle.putSerializable("pageNumber", pageNumber);
+            LoaderManager loaderManager = LoaderManager.getInstance(this);
+            Loader<ArrayList<Film>> loader = loaderManager.getLoader(pageNumber.getCurrentPageNumber());
+            if (loader == null) {
+                loaderManager.initLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
+            } else {
+                loaderManager.restartLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
+            }
+            thisPage.setText("" + pageNumber.getCurrentPageNumber());
+
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void displayDatabaseInfo() {
-        // Create and/or open a database to read from it
-//        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-
-
-        String[] projection= {FilmEntry._ID,FilmEntry.COLUMN_FILM_TITLE,FilmEntry.COLUMN_DATE,
-                FilmEntry.COLUMN_VOTE_AVERAGE,FilmEntry.COLUMN_POSTER,FilmEntry.COLUMN_OVERVIEW};
-
-//         FilmDbHelper mDbHelper = new FilmDbHelper(this);
-
-//        SQLiteDatabase database = mDbHelper.getReadableDatabase();
-        Cursor cursor = getContentResolver().query(CONTENT_URI,projection,null,null,
-                null,null);
-        ArrayList<Film> favFilm = new ArrayList<Film>();
-
-//        TextView displayView = (TextView) findViewById(R.id.database);
-
-        try {
-
-
-
-            // Figure out the index of each column
-            int idColumnIndex = cursor.getColumnIndex(FilmEntry._ID);
-            int nameColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_FILM_TITLE);
-            int dateColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_DATE);
-            int averageColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_VOTE_AVERAGE);
-            int posterColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_POSTER);
-            int overviewColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_OVERVIEW);
-
-
-            // Iterate through all the returned rows in the cursor
-            while (cursor.moveToNext()) {
-                // Use that index to extract the String or Int value of the word
-                // at the current row the cursor is on.
-                int currentID = cursor.getInt(idColumnIndex);
-                String currentFilmTitle = cursor.getString(nameColumnIndex);
-                String currentFilmDate = cursor.getString(dateColumnIndex);
-                String currentAverage = cursor.getString(averageColumnIndex);
-                String currentPoster = cursor.getString(posterColumnIndex);
-                String currentOverview = cursor.getString(overviewColumnIndex);
-                favFilm.add(new Film(currentPoster,currentFilmTitle,currentOverview,currentFilmDate,currentAverage,""+currentID));
-
-            }
-        } finally {
-            // Always close the cursor when you're done reading from it. This releases all its
-            // resources and makes it invalid.
-            cursor.close();
-        }
-        mAdapter.setFilmData(favFilm);
     }
 }

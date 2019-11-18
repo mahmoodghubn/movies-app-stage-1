@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -117,6 +118,7 @@ public class DetailActivity extends YouTubeBaseActivity implements ReviewAdapter
 
     public boolean hasObject(String id) {
 
+        Log.v("yes ","I required the database");
         String[] projection ={FilmEntry._ID, COLUMN_FILM_TITLE,COLUMN_DATE,COLUMN_VOTE_AVERAGE,COLUMN_OVERVIEW,COLUMN_POSTER};
         Cursor cursor = getContentResolver().query(CONTENT_URI.buildUpon().appendPath(id).build(),projection,_ID + "=?",new String[]{id},null);
         boolean hasObject = false;
