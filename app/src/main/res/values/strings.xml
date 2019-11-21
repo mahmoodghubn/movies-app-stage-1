@@ -11,4 +11,7 @@
     <string name="editor_insert_film_successful">Film saved</string>
 
     <string name="editor_insert_film_failed">Error with saving film</string>
+
+    <string name="thumbnail_image_view_desc">Youtube Video thumbnail image view</string>
+
 </resources>

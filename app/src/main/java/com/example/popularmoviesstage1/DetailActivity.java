@@ -1,11 +1,9 @@
 package com.example.popularmoviesstage1;
 
-import android.annotation.SuppressLint;
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -13,74 +11,78 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.AsyncTaskLoader;
+import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.popularmoviesstage1.Data.FilmDbHelper;
 import com.example.popularmoviesstage1.model.Film;
 import com.example.popularmoviesstage1.utilities.NetworkUtils;
-import com.google.android.youtube.player.YouTubeBaseActivity;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
+import com.google.android.youtube.player.YouTubePlayerFragment;
 import com.google.android.youtube.player.YouTubePlayerView;
 import com.squareup.picasso.Picasso;
 import com.example.popularmoviesstage1.Data.FilmContract.FilmEntry;
-
 
 import java.net.URL;
 import java.util.ArrayList;
 
 import com.example.popularmoviesstage1.ReviewAdapter.ReviewAdapterOnClickHandler;
 
-import static com.example.popularmoviesstage1.Data.FilmContract.BASE_CONTENT_URI;
 import static com.example.popularmoviesstage1.Data.FilmContract.FilmEntry.*;
-import static com.example.popularmoviesstage1.Data.FilmContract.PATH_FILM;
 
-public class DetailActivity extends YouTubeBaseActivity implements ReviewAdapterOnClickHandler {
-
-    public static String YOUTUBE_API_KEY;
+public class DetailActivity extends AppCompatActivity implements ReviewAdapterOnClickHandler, LoaderManager.LoaderCallbacks<DetailActivity.Passed> {
 
     ImageView imageView;
     TextView title;
     TextView date;
     TextView overview;
     TextView voteAverage;
-    YouTubePlayerView mYoutubePlayerView;
-
-    YouTubePlayer.OnInitializedListener mOnInitializedListener;
-    ArrayList<String> loadVideos;
     Film film;
     private ReviewAdapter mAdapter;
     private ImageView favoriteFilmButton;
     FilmDbHelper mDbHelper;
+    Context context;
+
+    private static final String TAG = MainActivity.class.getSimpleName();
+    private RecyclerView recyclerView;
+    //youtube player fragment
+    private YouTubePlayerFragment youTubePlayerFragment;
+    private ArrayList<String> youtubeVideoArrayList;
+
+    //youtube player to play video when new video selected
+    private YouTubePlayer youTubePlayer;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
         favoriteFilmButton = findViewById(R.id.iv_favButton);
+        context = getBaseContext();
 
-        YOUTUBE_API_KEY = this.getString(R.string.youtube_api);
-        mYoutubePlayerView =  findViewById(R.id.youtube_player_view);
+        //mYoutubePlayerView = findViewById(R.id.youtube_player_view);
         imageView = findViewById(R.id.film_image);
-        mOnInitializedListener = new YouTubePlayer.OnInitializedListener() {
-
-
-            @Override
-            public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer youTubePlayer, boolean b) {
-                youTubePlayer.loadVideos(loadVideos);
-
-            }
-
-            @Override
-            public void onInitializationFailure(YouTubePlayer.Provider provider, YouTubeInitializationResult youTubeInitializationResult) {
-
-            }
-        };
 
         film = (Film) getIntent().getSerializableExtra("FilmClass");
+        Bundle filmBundle2 = new Bundle();
+        filmBundle2.putString("film", film.getId());
+        //the id of the loader is the same as page number
+        LoaderManager loaderManager = LoaderManager.getInstance(this);
 
-        new FetchTrailer().execute(film.getId(), "videos");
+        Loader<Passed> loader = loaderManager.getLoader(Integer.parseInt(film.getId()));
+        if (loader == null) {
+            loaderManager.initLoader(Integer.parseInt(film.getId()), filmBundle2, this);
+        } else {
+            loaderManager.restartLoader(Integer.parseInt(film.getId()), filmBundle2, this);
+        }
+
         mDbHelper = new FilmDbHelper(this);
 
         String poster = film.getPoster();
@@ -99,12 +101,11 @@ public class DetailActivity extends YouTubeBaseActivity implements ReviewAdapter
         if (hasObject(film.getId())) {
             favoriteFilmButton.setImageResource(R.drawable.ic_favorite_solid_24dp);
         }
-        RecyclerView mRecyclerView =  findViewById(R.id.rv2);
+        RecyclerView mRecyclerView = findViewById(R.id.rv2);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
         mRecyclerView.setLayoutManager(linearLayoutManager);
         mRecyclerView.setHasFixedSize(true);
         mAdapter = new ReviewAdapter();
-        new FetchTrailer().execute(film.getId(), "reviews");
         mRecyclerView.setAdapter(mAdapter);
         favoriteFilmButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -116,18 +117,95 @@ public class DetailActivity extends YouTubeBaseActivity implements ReviewAdapter
 
     }
 
+    /**
+     * initialize youtube player via Fragment and get instance of YoutubePlayer
+     */
+    private void initializeYoutubePlayer() {
+
+        // youTubePlayerFragment = (YouTubePlayerSupportFragment) getSupportFragmentManager()
+        //       .findFragmentById(R.id.youtube_player_fragment);
+        //  youTubePlayerFragment = YouTubePlayerSupportFragment.newInstance();
+        // FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        //  transaction.replace(R.id.youtube_player_fragment, youTubePlayerFragment).commit();
+
+        youTubePlayerFragment = (YouTubePlayerFragment) getFragmentManager().findFragmentById(R.id.youtube_player_fragment);
+
+        if (youTubePlayerFragment == null)
+            return;
+
+        youTubePlayerFragment.initialize(context.getString(R.string.youtube_api), new YouTubePlayer.OnInitializedListener() {
+
+            @Override
+            public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer player,
+                                                boolean wasRestored) {
+                if (!wasRestored) {
+                    youTubePlayer = player;
+
+                    //set the player style default
+                    youTubePlayer.setPlayerStyle(YouTubePlayer.PlayerStyle.DEFAULT);
+
+                    //cue the 1st video by default
+                    youTubePlayer.cueVideo(youtubeVideoArrayList.get(0));
+                }
+            }
+
+            @Override
+            public void onInitializationFailure(YouTubePlayer.Provider arg0, YouTubeInitializationResult arg1) {
+
+                //print or show error if initialization failed
+                Log.e(TAG, "Youtube Player View initialization failed");
+            }
+        });
+    }
+
+    /**
+     * setup the recycler view here
+     */
+    private void setUpRecyclerView() {
+        recyclerView = findViewById(R.id.recycler_view);
+        recyclerView.setHasFixedSize(true);
+
+        //Horizontal direction recycler view
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        recyclerView.setLayoutManager(linearLayoutManager);
+    }
+
+    /**
+     * populate the recycler view and implement the click event here
+     */
+    private void populateRecyclerView() {
+        final YoutubeVideoAdapter adapter = new YoutubeVideoAdapter(this, youtubeVideoArrayList);
+        recyclerView.setAdapter(adapter);
+
+        //set click event
+        recyclerView.addOnItemTouchListener(new RecyclerViewOnClickListener(this, new RecyclerViewOnClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+
+                if (youTubePlayerFragment != null && youTubePlayer != null) {
+                    //update selected position
+                    adapter.setSelectedPosition(position);
+
+                    //load selected video
+                    youTubePlayer.cueVideo(youtubeVideoArrayList.get(position));
+                }
+
+            }
+        }));
+    }
+
+
     public boolean hasObject(String id) {
 
-        Log.v("yes ","I required the database");
-        String[] projection ={FilmEntry._ID, COLUMN_FILM_TITLE,COLUMN_DATE,COLUMN_VOTE_AVERAGE,COLUMN_OVERVIEW,COLUMN_POSTER};
-        Cursor cursor = getContentResolver().query(CONTENT_URI.buildUpon().appendPath(id).build(),projection,_ID + "=?",new String[]{id},null);
+        Log.v("yes ", "I required the database");
+        String[] projection = {FilmEntry._ID, COLUMN_FILM_TITLE, COLUMN_DATE, COLUMN_VOTE_AVERAGE, COLUMN_OVERVIEW, COLUMN_POSTER};
+        Cursor cursor = getContentResolver().query(CONTENT_URI.buildUpon().appendPath(id).build(), projection, _ID + "=?", new String[]{id}, null);
         boolean hasObject = false;
         if (cursor.moveToFirst()) {
             hasObject = true;
         }
 
-        cursor.close();          // Don't forget to close your cursor
-//        db.close();              //AND your Database!
+        cursor.close();
         return hasObject;
     }
 
@@ -148,7 +226,7 @@ public class DetailActivity extends YouTubeBaseActivity implements ReviewAdapter
     }
 
     private void deleteFilmFromDatabase(int filmId) {
-        getContentResolver().delete(CONTENT_URI, _ID + "=?"  , new String[]{""+filmId});
+        getContentResolver().delete(CONTENT_URI, _ID + "=?", new String[]{"" + filmId});
 
     }
 
@@ -160,7 +238,7 @@ public class DetailActivity extends YouTubeBaseActivity implements ReviewAdapter
         contentValues.put(COLUMN_VOTE_AVERAGE, film.getVoteAverage());
         contentValues.put(COLUMN_OVERVIEW, film.getOverview());
         contentValues.put(COLUMN_POSTER, film.getPoster());
-        Uri newUri = getContentResolver().insert(CONTENT_URI,  contentValues);
+        Uri newUri = getContentResolver().insert(CONTENT_URI, contentValues);
         if (newUri == null) {
             // If the new content URI is null, then there was an error with insertion.
             Toast.makeText(this, getString(R.string.editor_insert_film_failed),
@@ -172,56 +250,80 @@ public class DetailActivity extends YouTubeBaseActivity implements ReviewAdapter
 
     }
 
-    @SuppressLint("StaticFieldLeak")
-    private class FetchTrailer extends AsyncTask<String, Void, Passed> {
-
-        @Override
-        protected Passed doInBackground(String... params) {
-            /* If there's no zip code, there's nothing to look up. */
-            if (params.length == 0) {
-                return null;
+    @NonNull
+    @Override
+    public Loader<Passed> onCreateLoader(int id, @Nullable final Bundle args) {
+        return new AsyncTaskLoader<Passed>(this) {
+            @Override
+            protected void onStartLoading() {
+                super.onStartLoading();
+                forceLoad();
             }
 
-            String id = params[0];
-            String videosOrReviews = params[1];
-            boolean isVideo = videosOrReviews.equals("videos");
-            URL keyUrl = NetworkUtils.creatingKeyUrl(DetailActivity.this, id, videosOrReviews);
+            @Nullable
+            @Override
+            public Passed loadInBackground() {
+                //getting the films of the new page
 
-            try {
-                String jsonKeysResponse = NetworkUtils
-                        .getResponseFromHttpUrl(keyUrl);
-                ArrayList<String> simpleJsonKeysData;
-                simpleJsonKeysData = NetworkUtils
-                        .extractKeysFromJson(DetailActivity.this, jsonKeysResponse, videosOrReviews);
-                return new Passed(isVideo, simpleJsonKeysData);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
+                ArrayList<String> simpleJsonKeysData = new ArrayList<>();
+                ArrayList<String> simpleJsonKeysData2 = new ArrayList<>();
 
-        @Override
-        protected void onPostExecute(Passed passed) {
-            if (passed.JSONData != null) {
-                if (passed.isVideos) {
-                    loadVideos = passed.JSONData;
-                    mYoutubePlayerView.initialize(YOUTUBE_API_KEY, mOnInitializedListener);
-                } else {
-                    mAdapter.setReviewData(passed.JSONData);
 
+                String filmId = args.getString("film");
+                URL keyUrl = NetworkUtils.creatingKeyUrl(DetailActivity.this, filmId, "videos");
+                URL keyUrl2 = NetworkUtils.creatingKeyUrl(DetailActivity.this, filmId, "reviews");
+
+                try {
+                    String jsonKeysResponse = NetworkUtils
+                            .getResponseFromHttpUrl(keyUrl);
+                    simpleJsonKeysData = NetworkUtils
+                            .extractKeysFromJson(DetailActivity.this, jsonKeysResponse, "videos");
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } else {
-                //TODO show error message
+
+                try {
+                    String jsonKeysResponse = NetworkUtils
+                            .getResponseFromHttpUrl(keyUrl2);
+                    simpleJsonKeysData2 = NetworkUtils
+                            .extractKeysFromJson(DetailActivity.this, jsonKeysResponse, "reviews");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return new Passed(simpleJsonKeysData, simpleJsonKeysData2);
             }
+
+        };
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<Passed> loader, Passed passed) {
+        if (passed != null) {
+            if (passed.JSONData != null) {
+                youtubeVideoArrayList = passed.JSONData;
+                initializeYoutubePlayer();
+                setUpRecyclerView();
+                populateRecyclerView();
+            }
+            if (passed.JSONData2 != null) {
+                mAdapter.setReviewData(passed.JSONData2);
+            }
+        } else {
+            //TODO show error message
         }
     }
 
-    private class Passed {
-        boolean isVideos;
-        ArrayList<String> JSONData;
+    @Override
+    public void onLoaderReset(@NonNull Loader<Passed> loader) {
 
-        Passed(boolean isVideos, ArrayList<String> JSONData) {
-            this.isVideos = isVideos;
+    }
+
+    class Passed {
+        ArrayList<String> JSONData;
+        ArrayList<String> JSONData2;
+
+        Passed(ArrayList<String> JSONData, ArrayList<String> JSONData2) {
+            this.JSONData2 = JSONData2;
             this.JSONData = JSONData;
         }
     }

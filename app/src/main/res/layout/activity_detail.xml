@@ -6,10 +6,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".DetailActivity">
-    <com.google.android.youtube.player.YouTubePlayerView
-        android:id="@+id/youtube_player_view"
+    <!--  Youtube Player Fragment  -->
+    <fragment
+        android:id="@+id/youtube_player_fragment"
+        android:name="com.google.android.youtube.player.YouTubePlayerFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"/>
+
+    <!-- RecyclerView to display list of Videos in Horizontal direction -->
+    <androidx.recyclerview.widget.RecyclerView
+
+        android:id="@+id/recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="150dp" />
+
 
     <ScrollView
         android:layout_width="match_parent"

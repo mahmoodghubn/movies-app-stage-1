@@ -13,7 +13,6 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -67,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     private PageNumber pageNumber;
     //the sort of the current page
     private String sort = NetworkUtils.POPULARITY;
-
+    public static LoaderManager loaderManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         Bundle filmBundle = new Bundle();
         filmBundle.putSerializable("pageNumber", pageNumber);
         //the app becomes life cycle aware
-        LoaderManager loaderManager = LoaderManager.getInstance(this);
+        loaderManager = LoaderManager.getInstance(this);
         //the id of the loader is the same as page number
         Loader<ArrayList<Film>> loader = loaderManager.getLoader(pageNumber.getCurrentPageNumber());
         if (loader == null) {
@@ -241,7 +240,6 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                         // resources and makes it invalid.
                         cursor.close();
                     }
-                    Log.i("xxxx","xxss");
                     return favFilm;
                 }
             };
