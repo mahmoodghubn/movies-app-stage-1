@@ -315,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             thisPage.setText("" + pageNumber.getCurrentPageNumber());
             return true;
         } else if (id == R.id.favorite && !pageNumber.getCurrentPageSort().equals("FAVORITE")) {
-            //TODO get the pages from the database
+            //TODO get the pages from the database sorted with groups
             mAdapter.setFilmData(null);
             pageNumber = new PageNumber(PageType.FAVORITE, null);
             Bundle filmBundle = new Bundle();

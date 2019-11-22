@@ -39,18 +39,19 @@ import static com.example.popularmoviesstage1.Data.FilmContract.FilmEntry.*;
 
 public class DetailActivity extends AppCompatActivity implements ReviewAdapterOnClickHandler, LoaderManager.LoaderCallbacks<DetailActivity.Passed> {
 
+    private static final String TAG = DetailActivity.class.getSimpleName();
+
     ImageView imageView;
     TextView title;
     TextView date;
     TextView overview;
     TextView voteAverage;
+    private ImageView favoriteFilmButton;
+
     Film film;
     private ReviewAdapter mAdapter;
-    private ImageView favoriteFilmButton;
-    FilmDbHelper mDbHelper;
     Context context;
 
-    private static final String TAG = MainActivity.class.getSimpleName();
     private RecyclerView recyclerView;
     //youtube player fragment
     private YouTubePlayerFragment youTubePlayerFragment;
@@ -58,22 +59,21 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
 
     //youtube player to play video when new video selected
     private YouTubePlayer youTubePlayer;
+    boolean insideDB = false;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
-        favoriteFilmButton = findViewById(R.id.iv_favButton);
         context = getBaseContext();
 
-        //mYoutubePlayerView = findViewById(R.id.youtube_player_view);
+        favoriteFilmButton = findViewById(R.id.iv_favButton);
         imageView = findViewById(R.id.film_image);
 
         film = (Film) getIntent().getSerializableExtra("FilmClass");
         Bundle filmBundle2 = new Bundle();
         filmBundle2.putString("film", film.getId());
-        //the id of the loader is the same as page number
         LoaderManager loaderManager = LoaderManager.getInstance(this);
 
         Loader<Passed> loader = loaderManager.getLoader(Integer.parseInt(film.getId()));
@@ -82,8 +82,6 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
         } else {
             loaderManager.restartLoader(Integer.parseInt(film.getId()), filmBundle2, this);
         }
-
-        mDbHelper = new FilmDbHelper(this);
 
         String poster = film.getPoster();
         String filmUrl = NetworkUtils.buildPosterUrl(poster, NetworkUtils.ORIGINAL);
@@ -98,9 +96,6 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
         date.setText(film.getReleaseDate());
         overview = findViewById(R.id.overview);
         overview.setText(film.getOverview());
-        if (hasObject(film.getId())) {
-            favoriteFilmButton.setImageResource(R.drawable.ic_favorite_solid_24dp);
-        }
         RecyclerView mRecyclerView = findViewById(R.id.rv2);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
         mRecyclerView.setLayoutManager(linearLayoutManager);
@@ -114,6 +109,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
 
             }
         });
+        //TODO making videos running automatic by comparing it to the previous settings
 
     }
 
@@ -121,13 +117,6 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
      * initialize youtube player via Fragment and get instance of YoutubePlayer
      */
     private void initializeYoutubePlayer() {
-
-        // youTubePlayerFragment = (YouTubePlayerSupportFragment) getSupportFragmentManager()
-        //       .findFragmentById(R.id.youtube_player_fragment);
-        //  youTubePlayerFragment = YouTubePlayerSupportFragment.newInstance();
-        // FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        //  transaction.replace(R.id.youtube_player_fragment, youTubePlayerFragment).commit();
-
         youTubePlayerFragment = (YouTubePlayerFragment) getFragmentManager().findFragmentById(R.id.youtube_player_fragment);
 
         if (youTubePlayerFragment == null)
@@ -195,27 +184,13 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
     }
 
 
-    public boolean hasObject(String id) {
-
-        Log.v("yes ", "I required the database");
-        String[] projection = {FilmEntry._ID, COLUMN_FILM_TITLE, COLUMN_DATE, COLUMN_VOTE_AVERAGE, COLUMN_OVERVIEW, COLUMN_POSTER};
-        Cursor cursor = getContentResolver().query(CONTENT_URI.buildUpon().appendPath(id).build(), projection, _ID + "=?", new String[]{id}, null);
-        boolean hasObject = false;
-        if (cursor.moveToFirst()) {
-            hasObject = true;
-        }
-
-        cursor.close();
-        return hasObject;
-    }
-
     @Override
     public void onClick(String reviewData) {
 
     }
 
     private void setFavorite(String filmId) {
-        if (!hasObject(filmId)) {
+        if (!insideDB) {
             favoriteFilmButton.setImageResource(R.drawable.ic_favorite_solid_24dp);
             insertFilmInDatabase(film);
 
@@ -223,6 +198,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
             favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
             deleteFilmFromDatabase(Integer.parseInt(film.getId()));
         }
+        insideDB = !insideDB;
     }
 
     private void deleteFilmFromDatabase(int filmId) {
@@ -263,13 +239,22 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
             @Nullable
             @Override
             public Passed loadInBackground() {
+                String filmId = args.getString("film");
+
                 //getting the films of the new page
+                String[] projection = {FilmEntry._ID};
+                Cursor cursor = getContentResolver().query(CONTENT_URI.buildUpon().appendPath(filmId).build(), projection, _ID + "=?", new String[]{filmId}, null);
+                boolean hasObject = false;
+                if (cursor.moveToFirst()) {
+                    hasObject = true;
+                }
+
+                cursor.close();
 
                 ArrayList<String> simpleJsonKeysData = new ArrayList<>();
                 ArrayList<String> simpleJsonKeysData2 = new ArrayList<>();
 
 
-                String filmId = args.getString("film");
                 URL keyUrl = NetworkUtils.creatingKeyUrl(DetailActivity.this, filmId, "videos");
                 URL keyUrl2 = NetworkUtils.creatingKeyUrl(DetailActivity.this, filmId, "reviews");
 
@@ -290,7 +275,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                return new Passed(simpleJsonKeysData, simpleJsonKeysData2);
+                return new Passed(simpleJsonKeysData, simpleJsonKeysData2,hasObject);
             }
 
         };
@@ -311,6 +296,10 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
         } else {
             //TODO show error message
         }
+        if (passed.insideDB) {
+            insideDB = passed.insideDB;
+            favoriteFilmButton.setImageResource(R.drawable.ic_favorite_solid_24dp);
+        }
     }
 
     @Override
@@ -319,10 +308,12 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
     }
 
     class Passed {
+        boolean insideDB;
         ArrayList<String> JSONData;
         ArrayList<String> JSONData2;
 
-        Passed(ArrayList<String> JSONData, ArrayList<String> JSONData2) {
+        Passed(ArrayList<String> JSONData, ArrayList<String> JSONData2,boolean insideDB) {
+            this.insideDB= insideDB;
             this.JSONData2 = JSONData2;
             this.JSONData = JSONData;
         }
