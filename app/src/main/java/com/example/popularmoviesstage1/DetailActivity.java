@@ -110,6 +110,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
             }
         });
         //TODO making videos running automatic by comparing it to the previous settings
+        //TODO making list videos response to click after turning to landscape mode
 
     }
 
@@ -124,6 +125,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
 
         youTubePlayerFragment.initialize(context.getString(R.string.youtube_api), new YouTubePlayer.OnInitializedListener() {
 
+
             @Override
             public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer player,
                                                 boolean wasRestored) {
@@ -133,8 +135,12 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
                     //set the player style default
                     youTubePlayer.setPlayerStyle(YouTubePlayer.PlayerStyle.DEFAULT);
 
+                    //youTubePlayer.loadVideos(youtubeVideoArrayList);
                     //cue the 1st video by default
-                    youTubePlayer.cueVideo(youtubeVideoArrayList.get(0));
+                   youTubePlayer.loadVideos(youtubeVideoArrayList);
+                   // youTubePlayer.loadPlaylist(youtubeVideoArrayList.get(0));
+
+
                 }
             }
 
@@ -144,7 +150,9 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
                 //print or show error if initialization failed
                 Log.e(TAG, "Youtube Player View initialization failed");
             }
+
         });
+
     }
 
     /**
@@ -175,12 +183,17 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
                     //update selected position
                     adapter.setSelectedPosition(position);
 
+                    //youTubePlayer.release();
+                    //ArrayList<String> youtubeVideoArrayList2= new ArrayList<>(youtubeVideoArrayList.subList(position,youtubeVideoArrayList.size()));
+
                     //load selected video
-                    youTubePlayer.cueVideo(youtubeVideoArrayList.get(position));
+                    youTubePlayer.loadVideo(youtubeVideoArrayList.get(position));
+
                 }
 
             }
         }));
+
     }
 
 

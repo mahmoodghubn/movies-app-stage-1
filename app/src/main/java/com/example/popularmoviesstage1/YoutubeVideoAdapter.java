@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubeThumbnailLoader;
 import com.google.android.youtube.player.YouTubeThumbnailView;
-import com.example.popularmoviesstage1.R;
 import com.example.popularmoviesstage1.model.YoutubeViewHolder;
 
 import java.util.ArrayList;

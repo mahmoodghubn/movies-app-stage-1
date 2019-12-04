@@ -10,9 +10,15 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -31,6 +37,7 @@ import java.util.ArrayList;
 import com.example.popularmoviesstage1.FilmAdapter.FilmAdapterOnClickHandler;
 import com.example.popularmoviesstage1.Data.FilmContract.*;
 
+import static android.os.SystemClock.sleep;
 import static com.example.popularmoviesstage1.Data.FilmContract.FilmEntry.CONTENT_URI;
 
 public class MainActivity extends AppCompatActivity implements FilmAdapterOnClickHandler
@@ -39,7 +46,6 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     //TODO change the layout of landscape mode for the main view
     //TODO beautifying the detail activity
     //TODO fixing the rotation of the detail activity to start of the part that
-    //TODO fixing next and previous page button
     /*The titles and IDs of the user’s favorite movies are stored in a native SQLite database and exposed via a ContentProvider
     OR
     stored using Room.
@@ -66,11 +72,25 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     private PageNumber pageNumber;
     //the sort of the current page
     private String sort = NetworkUtils.POPULARITY;
-    public static LoaderManager loaderManager;
+    IntentFilter internetConnectionIntentFilter;
+    InternetBroadCastReceiver internetBroadCastReceiver;
+    boolean isDataLoaded;
+    private TextView emptyView;
+    RecyclerView mRecyclerView;
+    View loadingIndicator;
+    //this boolean is to forbid the back online statement from appearing when app first launch and when resuming
+    boolean whenAppLaunchFirstTime = true;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        emptyView = (TextView) findViewById(R.id.empty_view);
+        loadingIndicator = findViewById(R.id.loading_indicator);
+
+
+
         thisPage = findViewById(R.id.page_number);
         //at first we will start with page number one and popularity type
         pageNumber = new PageNumber(null, null);
@@ -84,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         previousPage = findViewById(R.id.ic_left);
         nextPage = findViewById(R.id.ic_right);
 
-        RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
+        mRecyclerView = findViewById(R.id.recycler_view);
         RecyclerView.LayoutManager gridLayoutManager = new GridLayoutManager(getApplicationContext(), 2);
         mRecyclerView.setLayoutManager(gridLayoutManager);
         mRecyclerView.setHasFixedSize(true);
@@ -94,12 +114,14 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         Bundle filmBundle = new Bundle();
         filmBundle.putSerializable("pageNumber", pageNumber);
         //the app becomes life cycle aware
-        loaderManager = LoaderManager.getInstance(this);
+        LoaderManager loaderManager = LoaderManager.getInstance(this);
         //the id of the loader is the same as page number
         Loader<ArrayList<Film>> loader = loaderManager.getLoader(pageNumber.getCurrentPageNumber());
         if (loader == null) {
+
             loaderManager.initLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
         } else {
+
             loaderManager.restartLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
         }
 
@@ -108,6 +130,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             @SuppressLint("DefaultLocale")
             @Override
             public void onClick(View view) {
+
                 int previousPageNumber = Integer.parseInt(thisPage.getText().toString());
                 thisPage.setText(String.format("%d", ++previousPageNumber));
                 Bundle filmBundle = new Bundle();
@@ -120,9 +143,17 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                 //getting the current page
                 LoaderManager loaderManager = LoaderManager.getInstance(MainActivity.this);
                 Loader<ArrayList<Film>> loader = loaderManager.getLoader(pageNumber.getCurrentPageNumber());
+                loadingIndicator.setVisibility(View.VISIBLE);
+                mRecyclerView.setVisibility(View.GONE);
+                emptyView.setVisibility(View.GONE);
+
+
+
                 if (loader == null) {
+
                     loaderManager.initLoader(pageNumber.getCurrentPageNumber(), filmBundle, MainActivity.this);
                 } else {
+
                     loaderManager.restartLoader(pageNumber.getCurrentPageNumber(), filmBundle, MainActivity.this);
                 }
             }
@@ -139,13 +170,40 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                 filmBundle.putSerializable("pageNumber", pageNumber);
                 LoaderManager loaderManager = LoaderManager.getInstance(MainActivity.this);
                 Loader<ArrayList<Film>> loader = loaderManager.getLoader(pageNumber.getCurrentPageNumber());
+                //this line of code because the loading indicator will be set to gone after load is finish
+                loadingIndicator.setVisibility(View.VISIBLE);
+                mRecyclerView.setVisibility(View.GONE);
+                emptyView.setVisibility(View.GONE);
+
+
+
                 if (loader == null) {
+
                     loaderManager.initLoader(pageNumber.getCurrentPageNumber(), filmBundle, MainActivity.this);
                 } else {
+
                     loaderManager.restartLoader(pageNumber.getCurrentPageNumber(), filmBundle, MainActivity.this);
                 }
             }
         });
+        internetConnectionIntentFilter = new IntentFilter();
+        internetConnectionIntentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+        internetBroadCastReceiver = new InternetBroadCastReceiver();
+    }
+
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        registerReceiver(internetBroadCastReceiver,internetConnectionIntentFilter);
+
+    }
+    @Override
+    protected void onPause(){
+        super.onPause();
+        unregisterReceiver(internetBroadCastReceiver);
+        whenAppLaunchFirstTime= true;
+
     }
 
 
@@ -163,6 +221,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         if (!pageNumber.getCurrentPageSort().equals("FAVORITE")) {
 
             return new AsyncTaskLoader<ArrayList<Film>>(this) {
+
                 @Override
                 protected void onStartLoading() {
                     super.onStartLoading();
@@ -173,6 +232,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                 @Override
                 public ArrayList<Film> loadInBackground() {
                     //getting the films of the new page
+
                     PageNumber pageNumber = (PageNumber) args.getSerializable("pageNumber");
                     URL filmsRequestUrl = NetworkUtils.createUrl(MainActivity.this, String.valueOf(pageNumber.getCurrentPageNumber()), pageNumber.getCurrentPageSort());
 
@@ -198,9 +258,11 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                     super.onStartLoading();
                     forceLoad();
                 }
+
                 @Nullable
                 @Override
                 public ArrayList<Film> loadInBackground() {
+
 
                     String[] projection = {FilmEntry._ID, FilmEntry.COLUMN_FILM_TITLE, FilmEntry.COLUMN_DATE,
                             FilmEntry.COLUMN_VOTE_AVERAGE, FilmEntry.COLUMN_POSTER, FilmEntry.COLUMN_OVERVIEW};
@@ -248,12 +310,23 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
 
     @Override
     public void onLoadFinished(@NonNull Loader<ArrayList<Film>> loader, ArrayList<Film> data) {
+        loadingIndicator.setVisibility(View.GONE);
+
 
         if (data != null) {
+
+            mRecyclerView.setVisibility(View.VISIBLE);
+            emptyView.setVisibility(View.GONE);
+            isDataLoaded =true;
+
             mAdapter.setFilmData(data);
 
         } else {
-            //TODO show error message
+            mRecyclerView.setVisibility(View.GONE);
+            emptyView.setVisibility(View.VISIBLE);
+            isDataLoaded = false;
+            //Toast.makeText(getBaseContext(),  "Can not load data check your internet connection", Toast.LENGTH_LONG).show();
+
         }
     }
 
@@ -286,6 +359,12 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         int id = item.getItemId();
 
         if (id == R.id.most_popular && !pageNumber.getCurrentPageSort().equals(NetworkUtils.POPULARITY)) {
+            loadingIndicator.setVisibility(View.VISIBLE);
+            mRecyclerView.setVisibility(View.GONE);
+            emptyView.setVisibility(View.GONE);
+
+
+
             mAdapter.setFilmData(null);
             pageNumber = new PageNumber(PageType.POPULARITY, null);
             Bundle filmBundle = new Bundle();
@@ -300,6 +379,11 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             thisPage.setText("" + pageNumber.getCurrentPageNumber());
             return true;
         } else if (id == R.id.highest_rated && !pageNumber.getCurrentPageSort().equals(NetworkUtils.HIGHEST_RATED)) {
+            loadingIndicator.setVisibility(View.VISIBLE);
+            mRecyclerView.setVisibility(View.GONE);
+            emptyView.setVisibility(View.GONE);
+
+
 
             mAdapter.setFilmData(null);
             pageNumber = new PageNumber(PageType.HIGH_RATED, null);
@@ -316,6 +400,11 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             return true;
         } else if (id == R.id.favorite && !pageNumber.getCurrentPageSort().equals("FAVORITE")) {
             //TODO get the pages from the database sorted with groups
+            loadingIndicator.setVisibility(View.VISIBLE);
+            mRecyclerView.setVisibility(View.GONE);
+            emptyView.setVisibility(View.GONE);
+
+
             mAdapter.setFilmData(null);
             pageNumber = new PageNumber(PageType.FAVORITE, null);
             Bundle filmBundle = new Bundle();
@@ -332,4 +421,69 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         }
         return super.onOptionsItemSelected(item);
     }
+
+    public void showInternetConnection(boolean isConnected) {
+        final TextView online_situation = findViewById(R.id.internet_situation);
+
+        if (isConnected && !whenAppLaunchFirstTime) {
+            //Toast.makeText(this,"Back online",Toast.LENGTH_LONG).show();
+            online_situation.setVisibility(View.VISIBLE);
+            online_situation.setText("Back online");
+            online_situation.setBackgroundColor(getResources().getColor(R.color.online));
+            CountDownTimer timer = new CountDownTimer(5000, 5000)
+            {
+                public void onTick(long millisUntilFinished)
+                {
+                }
+
+                public void onFinish()
+                {
+                    online_situation.setVisibility(View.GONE);
+                }
+            };
+            timer.start();
+            if (!isDataLoaded ){
+                //sleep(1000);
+
+                Bundle filmBundle = new Bundle();
+                filmBundle.putSerializable("pageNumber", pageNumber);
+                LoaderManager loaderManager = LoaderManager.getInstance(this);
+                //the id of the loader is the same as page number
+                Loader<ArrayList<Film>> loader = loaderManager.getLoader(pageNumber.getCurrentPageNumber());
+                loadingIndicator.setVisibility(View.VISIBLE);
+                emptyView.setVisibility(View.GONE);
+                if (loader == null) {
+                    loaderManager.initLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
+                } else {
+                    loaderManager.restartLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
+                }
+            }
+
+        } else if(!isConnected){
+            online_situation.setVisibility(View.VISIBLE);
+            online_situation.setText(R.string.offline_message);
+            online_situation.setBackgroundColor(getResources().getColor(R.color.cardview_dark_background));
+
+        }
+        whenAppLaunchFirstTime =false;
+
+    }
+
+    private class InternetBroadCastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            if (action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
+                NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+                boolean isConnected = info.isConnected();
+
+                sleep(1000);
+                showInternetConnection(isConnected);
+            }
+
+        }
+    }
+
 }
