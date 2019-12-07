@@ -1,10 +1,17 @@
 package com.example.popularmoviesstage1;
 
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -20,13 +27,11 @@ import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.popularmoviesstage1.Data.FilmDbHelper;
 import com.example.popularmoviesstage1.model.Film;
 import com.example.popularmoviesstage1.utilities.NetworkUtils;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerFragment;
-import com.google.android.youtube.player.YouTubePlayerView;
 import com.squareup.picasso.Picasso;
 import com.example.popularmoviesstage1.Data.FilmContract.FilmEntry;
 
@@ -35,6 +40,7 @@ import java.util.ArrayList;
 
 import com.example.popularmoviesstage1.ReviewAdapter.ReviewAdapterOnClickHandler;
 
+import static android.os.SystemClock.sleep;
 import static com.example.popularmoviesstage1.Data.FilmContract.FilmEntry.*;
 
 public class DetailActivity extends AppCompatActivity implements ReviewAdapterOnClickHandler, LoaderManager.LoaderCallbacks<DetailActivity.Passed> {
@@ -60,43 +66,47 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
     //youtube player to play video when new video selected
     private YouTubePlayer youTubePlayer;
     boolean insideDB = false;
+    IntentFilter internetConnectionIntentFilter;
+
+    InternetBroadCastReceiver internetBroadCastReceiver;
+    boolean isDataLoaded;
+    boolean isImageLoaded = false;
+    private TextView emptyView;
+    RecyclerView mRecyclerView;
+    View loadingIndicator;
+    //this boolean is to forbid the back online statement from appearing when app first launch and when resuming
+    boolean whenAppLaunchFirstTime = true;
+    Bundle filmBundle;
+    String filmUrl;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+
+        emptyView = (TextView) findViewById(R.id.empty_view);
+        loadingIndicator = findViewById(R.id.loading_indicator);
         context = getBaseContext();
 
         favoriteFilmButton = findViewById(R.id.iv_favButton);
         imageView = findViewById(R.id.film_image);
 
         film = (Film) getIntent().getSerializableExtra("FilmClass");
-        Bundle filmBundle2 = new Bundle();
-        filmBundle2.putString("film", film.getId());
+        filmBundle = new Bundle();
+        filmBundle.putString("film", film.getId());
         LoaderManager loaderManager = LoaderManager.getInstance(this);
 
         Loader<Passed> loader = loaderManager.getLoader(Integer.parseInt(film.getId()));
         if (loader == null) {
-            loaderManager.initLoader(Integer.parseInt(film.getId()), filmBundle2, this);
+            loaderManager.initLoader(Integer.parseInt(film.getId()), filmBundle, this);
         } else {
-            loaderManager.restartLoader(Integer.parseInt(film.getId()), filmBundle2, this);
+            loaderManager.restartLoader(Integer.parseInt(film.getId()), filmBundle, this);
         }
 
-        String poster = film.getPoster();
-        String filmUrl = NetworkUtils.buildPosterUrl(poster, NetworkUtils.ORIGINAL);
-        Picasso.with(this)
-                .load(filmUrl)
-                .into(imageView);
-        title = findViewById(R.id.film_title);
-        title.setText(film.getTitle());
-        voteAverage = findViewById(R.id.vote_average);
-        voteAverage.setText(film.getVoteAverage());
-        date = findViewById(R.id.date);
-        date.setText(film.getReleaseDate());
-        overview = findViewById(R.id.overview);
-        overview.setText(film.getOverview());
-        RecyclerView mRecyclerView = findViewById(R.id.rv2);
+        bindingData();
+
+        mRecyclerView = findViewById(R.id.rv2);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
         mRecyclerView.setLayoutManager(linearLayoutManager);
         mRecyclerView.setHasFixedSize(true);
@@ -105,13 +115,42 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
         favoriteFilmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setFavorite(film.getId());
-
+                setFavorite();
             }
         });
-        //TODO making videos running automatic by comparing it to the previous settings
-        //TODO making list videos response to click after turning to landscape mode
 
+        internetConnectionIntentFilter = new IntentFilter();
+        internetConnectionIntentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+        internetBroadCastReceiver = new InternetBroadCastReceiver();
+    }
+
+    private void bindingData() {
+        String poster = film.getPoster();
+
+        filmUrl = NetworkUtils.buildPosterUrl(poster, NetworkUtils.ORIGINAL);
+        // Get a reference to the ConnectivityManager to check state of network connectivity
+        ConnectivityManager connMgr = (ConnectivityManager)
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        // Get details on the currently active default data network
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        // If there is a network connection, fetch data
+        if (networkInfo != null && networkInfo.isConnected()) {
+            Picasso.with(this)
+                    .load(filmUrl)
+                    .into(imageView);
+            isImageLoaded = true;
+        }
+
+        title = findViewById(R.id.film_title);
+        title.setText(film.getTitle());
+        voteAverage = findViewById(R.id.vote_average);
+        voteAverage.setText(film.getVoteAverage());
+        date = findViewById(R.id.date);
+        date.setText(film.getReleaseDate());
+        overview = findViewById(R.id.overview);
+        overview.setText(film.getOverview());
+        setUpRecyclerView();
     }
 
     /**
@@ -137,22 +176,17 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
 
                     //youTubePlayer.loadVideos(youtubeVideoArrayList);
                     //cue the 1st video by default
-                   youTubePlayer.loadVideos(youtubeVideoArrayList);
-                   // youTubePlayer.loadPlaylist(youtubeVideoArrayList.get(0));
-
-
+                    youTubePlayer.loadVideos(youtubeVideoArrayList);
+                    // youTubePlayer.loadPlaylist(youtubeVideoArrayList.get(0));
                 }
             }
 
             @Override
             public void onInitializationFailure(YouTubePlayer.Provider arg0, YouTubeInitializationResult arg1) {
-
                 //print or show error if initialization failed
                 Log.e(TAG, "Youtube Player View initialization failed");
             }
-
         });
-
     }
 
     /**
@@ -183,30 +217,21 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
                     //update selected position
                     adapter.setSelectedPosition(position);
 
-                    //youTubePlayer.release();
-                    //ArrayList<String> youtubeVideoArrayList2= new ArrayList<>(youtubeVideoArrayList.subList(position,youtubeVideoArrayList.size()));
-
                     //load selected video
                     youTubePlayer.loadVideo(youtubeVideoArrayList.get(position));
-
                 }
-
             }
         }));
-
     }
-
 
     @Override
     public void onClick(String reviewData) {
-
     }
 
-    private void setFavorite(String filmId) {
+    private void setFavorite() {
         if (!insideDB) {
             favoriteFilmButton.setImageResource(R.drawable.ic_favorite_solid_24dp);
             insertFilmInDatabase(film);
-
         } else {
             favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
             deleteFilmFromDatabase(Integer.parseInt(film.getId()));
@@ -216,7 +241,6 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
 
     private void deleteFilmFromDatabase(int filmId) {
         getContentResolver().delete(CONTENT_URI, _ID + "=?", new String[]{"" + filmId});
-
     }
 
     private void insertFilmInDatabase(Film film) {
@@ -236,7 +260,6 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
             Toast.makeText(this, getString(R.string.editor_insert_film_successful),
                     Toast.LENGTH_SHORT).show();
         }
-
     }
 
     @NonNull
@@ -266,11 +289,8 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
 
                 ArrayList<String> simpleJsonKeysData = new ArrayList<>();
                 ArrayList<String> simpleJsonKeysData2 = new ArrayList<>();
-
-
                 URL keyUrl = NetworkUtils.creatingKeyUrl(DetailActivity.this, filmId, "videos");
                 URL keyUrl2 = NetworkUtils.creatingKeyUrl(DetailActivity.this, filmId, "reviews");
-
                 try {
                     String jsonKeysResponse = NetworkUtils
                             .getResponseFromHttpUrl(keyUrl);
@@ -288,26 +308,32 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                return new Passed(simpleJsonKeysData, simpleJsonKeysData2,hasObject);
+                return new Passed(simpleJsonKeysData, simpleJsonKeysData2, hasObject);
             }
-
         };
     }
 
     @Override
     public void onLoadFinished(@NonNull Loader<Passed> loader, Passed passed) {
+        loadingIndicator.setVisibility(View.GONE);
         if (passed != null) {
-            if (passed.JSONData != null) {
+            isDataLoaded = true;
+            if (passed.JSONData != null && passed.JSONData.size() != 0) {
+                recyclerView.setVisibility(View.VISIBLE);
+                emptyView.setVisibility(View.GONE);
                 youtubeVideoArrayList = passed.JSONData;
                 initializeYoutubePlayer();
-                setUpRecyclerView();
                 populateRecyclerView();
+            } else {
+                recyclerView.setVisibility(View.GONE);
+                emptyView.setVisibility(View.VISIBLE);
             }
-            if (passed.JSONData2 != null) {
+            if (passed.JSONData2 != null && passed.JSONData2.size() != 0) {
                 mAdapter.setReviewData(passed.JSONData2);
             }
-        } else {
-            //TODO show error message
+            if (passed.JSONData.size() == 0 || passed.JSONData2.size() == 0) {
+                isDataLoaded = false;
+            }
         }
         if (passed.insideDB) {
             insideDB = passed.insideDB;
@@ -317,18 +343,84 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
 
     @Override
     public void onLoaderReset(@NonNull Loader<Passed> loader) {
-
     }
 
     class Passed {
         boolean insideDB;
         ArrayList<String> JSONData;
         ArrayList<String> JSONData2;
-
-        Passed(ArrayList<String> JSONData, ArrayList<String> JSONData2,boolean insideDB) {
-            this.insideDB= insideDB;
+        Passed(ArrayList<String> JSONData, ArrayList<String> JSONData2, boolean insideDB) {
+            this.insideDB = insideDB;
             this.JSONData2 = JSONData2;
             this.JSONData = JSONData;
         }
+    }
+
+    public void showInternetConnection(boolean isConnected) {
+        final TextView online_situation = findViewById(R.id.internet_situation);
+
+        if (isConnected && !whenAppLaunchFirstTime) {
+            online_situation.setVisibility(View.VISIBLE);
+            online_situation.setText("Back online");
+            online_situation.setBackgroundColor(getResources().getColor(R.color.online));
+            CountDownTimer timer = new CountDownTimer(5000, 5000) {
+                public void onTick(long millisUntilFinished) {
+                }
+
+                public void onFinish() {
+                    online_situation.setVisibility(View.GONE);
+                }
+            };
+            timer.start();
+
+            if (!isDataLoaded) {
+                LoaderManager loaderManager = LoaderManager.getInstance(this);
+                loadingIndicator.setVisibility(View.VISIBLE);
+                emptyView.setVisibility(View.GONE);
+                Loader<Passed> loader = loaderManager.getLoader(Integer.parseInt(film.getId()));
+                if (loader == null) {
+                    loaderManager.initLoader(Integer.parseInt(film.getId()), filmBundle, this);
+                } else {
+                    loaderManager.restartLoader(Integer.parseInt(film.getId()), filmBundle, this);
+                }
+            }
+            if (!isImageLoaded) {
+                Picasso.with(this)
+                        .load(filmUrl)
+                        .into(imageView);
+                isImageLoaded = true;
+            }
+        } else if (!isConnected) {
+            online_situation.setVisibility(View.VISIBLE);
+            online_situation.setText(R.string.offline_message);
+            online_situation.setBackgroundColor(getResources().getColor(R.color.cardview_dark_background));
+        }
+        whenAppLaunchFirstTime = false;
+    }
+
+    private class InternetBroadCastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
+                NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+                boolean isConnected = info.isConnected();
+                sleep(1000);
+                showInternetConnection(isConnected);
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(internetBroadCastReceiver, internetConnectionIntentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(internetBroadCastReceiver);
+        whenAppLaunchFirstTime = true;
     }
 }

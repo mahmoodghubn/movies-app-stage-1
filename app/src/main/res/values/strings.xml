@@ -15,5 +15,6 @@
     <string name="thumbnail_image_view_desc">Youtube Video thumbnail image view</string>
     <string name="no_data_available">no_data_available</string>
     <string name="offline_message">you are offline</string>
+    <string name="back_online">Back online</string>
 
 </resources>

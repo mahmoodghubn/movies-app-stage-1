@@ -50,7 +50,7 @@ public class PageNumber implements Serializable {
         } else if (pageSort == PageType.HIGH_RATED) {
             return high_rated_page_number;
         }else {
-            return favorite_page_number;//TODO customize this line for favorite page
+            return favorite_page_number;
         }
     }
 }

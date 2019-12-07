@@ -180,7 +180,6 @@ public class NetworkUtils {
                 String voteAverage = currentFilm.getString("vote_average");
                 String id = currentFilm.getString("id");
                 if (!posterPath.equals("null")) {
-                    //TODO canceling this section and put a dummy photo when there is no photo
                     Film film = new Film(posterPath, title, overview, releaseDate, voteAverage, id);
                     films.add(film);
                 }
