@@ -46,7 +46,6 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     //TODO change the layout of landscape mode for the main view
     //TODO beautifying the detail activity
     //TODO adding animation
-    //TODO adding a favorite button to main activity
     //TODO adding search button
     //TODO adding notification if possible
     //TODO adding preferences which page to start off ,the number of movies per page
@@ -61,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     ImageButton previousPage;
     TextView thisPage;
     private FilmAdapter mAdapter;
-    private PageNumber pageNumber;
+    public static PageNumber pageNumber;
     //the sort of the current page
     private String sort = NetworkUtils.POPULARITY;
     IntentFilter internetConnectionIntentFilter;
@@ -78,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        emptyView = (TextView) findViewById(R.id.empty_view);
+        emptyView = findViewById(R.id.empty_view);
         loadingIndicator = findViewById(R.id.loading_indicator);
         thisPage = findViewById(R.id.page_number);
         //at first we will start with page number one and popularity type
@@ -86,7 +85,8 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         //restoring data after rotation
         if (savedInstanceState != null) {
             pageNumber = (PageNumber) savedInstanceState.getSerializable("pageNumber");
-            thisPage.setText("" + pageNumber.getCurrentPageNumber());
+            assert pageNumber != null;
+            thisPage.setText(String.valueOf(pageNumber.getCurrentPageNumber()));
         }
         //the arrows for the previous and next page
         previousPage = findViewById(R.id.ic_left);
@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             @Override
             public void onClick(View view) {
                 int previousPageNumber = Integer.parseInt(thisPage.getText().toString());
-                thisPage.setText(String.format("%d", ++previousPageNumber));
+                thisPage.setText(String.valueOf( ++previousPageNumber));
                 Bundle filmBundle = new Bundle();
                 //calculating the new page number
                 pageNumber = new PageNumber(null, previousPageNumber);
@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             public void onClick(View view) {
                 int previousPageNumber = Integer.parseInt(thisPage.getText().toString());
                 if (previousPageNumber != 1)
-                    thisPage.setText(String.format("%d", --previousPageNumber));
+                    thisPage.setText(String.valueOf( --previousPageNumber));
                 pageNumber = new PageNumber(null, previousPageNumber);
                 Bundle filmBundle = new Bundle();
                 filmBundle.putSerializable("pageNumber", pageNumber);
@@ -197,7 +197,9 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                 @Override
                 public ArrayList<Film> loadInBackground() {
                     //getting the films of the new page
+                    assert args != null;
                     PageNumber pageNumber = (PageNumber) args.getSerializable("pageNumber");
+                    assert pageNumber != null;
                     URL filmsRequestUrl = NetworkUtils.createUrl(MainActivity.this, String.valueOf(pageNumber.getCurrentPageNumber()), pageNumber.getCurrentPageSort());
 
                     try {
@@ -220,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                     forceLoad();
                 }
 
-                @Nullable
+                @NonNull
                 @Override
                 public ArrayList<Film> loadInBackground() {
                     String[] projection = {FilmEntry._ID, FilmEntry.COLUMN_FILM_TITLE, FilmEntry.COLUMN_DATE,
@@ -228,10 +230,11 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
 
                     Cursor cursor = getContentResolver().query(CONTENT_URI, projection, null, null,
                             null, null);
-                    ArrayList<Film> favFilm = new ArrayList<Film>();
+                    ArrayList<Film> favFilm = new ArrayList<>();
 
                     try {
                         // Figure out the index of each column
+                        assert cursor != null;
                         int idColumnIndex = cursor.getColumnIndex(FilmEntry._ID);
                         int nameColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_FILM_TITLE);
                         int dateColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_DATE);
@@ -254,6 +257,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                     } finally {
                         // Always close the cursor when you're done reading from it. This releases all its
                         // resources and makes it invalid.
+                        assert cursor != null;
                         cursor.close();
                     }
                     return favFilm;
@@ -322,7 +326,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             } else {
                 loaderManager.restartLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
             }
-            thisPage.setText("" + pageNumber.getCurrentPageNumber());
+            thisPage.setText(String.valueOf(pageNumber.getCurrentPageNumber()));
             return true;
         } else if (id == R.id.highest_rated && !pageNumber.getCurrentPageSort().equals(NetworkUtils.HIGHEST_RATED)) {
             loadingIndicator.setVisibility(View.VISIBLE);
@@ -342,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             } else {
                 loaderManager.restartLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
             }
-            thisPage.setText("" + pageNumber.getCurrentPageNumber());
+            thisPage.setText(String.valueOf(pageNumber.getCurrentPageNumber()));
             return true;
         } else if (id == R.id.favorite && !pageNumber.getCurrentPageSort().equals("FAVORITE")) {
             loadingIndicator.setVisibility(View.VISIBLE);
@@ -362,7 +366,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             } else {
                 loaderManager.restartLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
             }
-            thisPage.setText("" + pageNumber.getCurrentPageNumber());
+            thisPage.setText(String.valueOf(pageNumber.getCurrentPageNumber()));
 
         }
         return super.onOptionsItemSelected(item);
@@ -373,7 +377,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         if (isConnected && !whenAppLaunchFirstTime) {
             //Toast.makeText(this,"Back online",Toast.LENGTH_LONG).show();
             online_situation.setVisibility(View.VISIBLE);
-            online_situation.setText("Back online");
+            online_situation.setText(R.string.back_online);
             online_situation.setBackgroundColor(getResources().getColor(R.color.online));
             CountDownTimer timer = new CountDownTimer(5000, 5000)
             {
@@ -416,6 +420,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
 
+            assert action != null;
             if (action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
                 NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
                 boolean isConnected = info.isConnected();

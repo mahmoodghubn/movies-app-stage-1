@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
+import static com.example.popularmoviesstage1.MainActivity.pageNumber;
+
 public class FilmAdapter extends RecyclerView.Adapter<FilmAdapter.FilmAdapterViewHolder> {
 
     private Context context;
@@ -33,10 +35,12 @@ public class FilmAdapter extends RecyclerView.Adapter<FilmAdapter.FilmAdapterVie
 
     public class FilmAdapterViewHolder extends RecyclerView.ViewHolder implements OnClickListener {
         final ImageView mFilmImageView;
+        final ImageView favoriteFilmButton ;
 
         FilmAdapterViewHolder(View view) {
             super(view);
             mFilmImageView =  view.findViewById(R.id.iv_item);
+            favoriteFilmButton = itemView.findViewById(R.id.iv_favButton);
             view.setOnClickListener(this);
         }
 
@@ -55,18 +59,43 @@ public class FilmAdapter extends RecyclerView.Adapter<FilmAdapter.FilmAdapterVie
         int layoutIdForListItem = R.layout.film_list_item;
         LayoutInflater inflater = LayoutInflater.from(context);
         boolean shouldAttachToParentImmediately = false;
-
         View view = inflater.inflate(layoutIdForListItem, viewGroup, shouldAttachToParentImmediately);
         return new FilmAdapterViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull FilmAdapterViewHolder filmAdapterViewHolder, int position) {
+    public void onBindViewHolder(@NonNull final FilmAdapterViewHolder filmAdapterViewHolder,final int position) {
         String poster = mFilmsData.get(position).getPoster();
         String filmUrl = NetworkUtils.buildPosterUrl(poster,NetworkUtils.w185);
         Picasso.with(context)
                 .load(filmUrl)
                 .into(filmAdapterViewHolder.mFilmImageView);
+
+        boolean isInsideDb = new DetailActivity().queryFilmFromDatabase(mFilmsData.get(position).getId(),context);
+
+        if (isInsideDb){
+            filmAdapterViewHolder.favoriteFilmButton.setImageResource(R.drawable.ic_favorite_solid_24dp);
+        }else {
+            filmAdapterViewHolder.favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
+
+        }
+        filmAdapterViewHolder.favoriteFilmButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean isInsideDb = new DetailActivity().queryFilmFromDatabase(mFilmsData.get(position).getId(),context);
+                if (!isInsideDb) {
+                    filmAdapterViewHolder.favoriteFilmButton.setImageResource(R.drawable.ic_favorite_solid_24dp);
+                    new DetailActivity().insertFilmInDatabase(mFilmsData.get(position),context);
+                } else {
+                    filmAdapterViewHolder.favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
+                    new DetailActivity().deleteFilmFromDatabase(mFilmsData.get(position).getId(),context);
+                }
+                if (pageNumber.getCurrentPageSort().equals("FAVORITE")){
+                    mFilmsData.remove(position);
+                    notifyDataSetChanged();
+                }
+            }
+        });
     }
 
     @Override
@@ -84,4 +113,5 @@ public class FilmAdapter extends RecyclerView.Adapter<FilmAdapter.FilmAdapterVie
         }
         notifyDataSetChanged();
     }
+
 }

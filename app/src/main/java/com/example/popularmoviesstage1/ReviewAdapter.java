@@ -16,10 +16,9 @@ import java.util.ArrayList;
 
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewAdapterViewHolder> {
 
-    private ArrayList<String> mReviewsData = new ArrayList<String>();
+    private ArrayList<String> mReviewsData = new ArrayList<>();
 
-    public interface ReviewAdapterOnClickHandler {
-        void onClick(String reviewData);
+    interface ReviewAdapterOnClickHandler {
     }
 
     ReviewAdapter() {
@@ -30,7 +29,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewAdap
 
         ReviewAdapterViewHolder(View view) {
             super(view);
-            mReviewTextView = (TextView) view.findViewById(R.id.tv_item);
+            mReviewTextView = view.findViewById(R.id.tv_item);
             view.setOnClickListener(this);
         }
 

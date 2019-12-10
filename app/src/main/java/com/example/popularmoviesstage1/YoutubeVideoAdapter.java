@@ -1,6 +1,7 @@
 package com.example.popularmoviesstage1;
 
 import android.content.Context;
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -29,11 +30,12 @@ public class YoutubeVideoAdapter extends RecyclerView.Adapter<YoutubeViewHolder>
     private int selectedPosition = 0;
 
 
-    public YoutubeVideoAdapter(Context context, ArrayList<String> youtubeVideoModelArrayList) {
+    YoutubeVideoAdapter(Context context, ArrayList<String> youtubeVideoModelArrayList) {
         this.context = context;
         this.youtubeVideoModelArrayList = youtubeVideoModelArrayList;
     }
 
+    @NonNull
     @Override
     public YoutubeViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
@@ -42,7 +44,7 @@ public class YoutubeVideoAdapter extends RecyclerView.Adapter<YoutubeViewHolder>
     }
 
     @Override
-    public void onBindViewHolder(YoutubeViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull YoutubeViewHolder holder, final int position) {
 
         //if selected position is equal to that mean view is selected so change the cardview color
         if (selectedPosition == position) {
@@ -89,11 +91,8 @@ public class YoutubeVideoAdapter extends RecyclerView.Adapter<YoutubeViewHolder>
         return youtubeVideoModelArrayList != null ? youtubeVideoModelArrayList.size() : 0;
     }
 
-    /**
-     * method the change the selected position when item clicked
-     * @param selectedPosition
-     */
-    public void setSelectedPosition(int selectedPosition) {
+
+    void setSelectedPosition(int selectedPosition) {
         this.selectedPosition = selectedPosition;
         //when item selected notify the adapter
         notifyDataSetChanged();

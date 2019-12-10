@@ -54,8 +54,7 @@ public class FilmProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("unknown uri");
         }
-        //TODO test this line of code when adding the favorite button to the main activity
-        cursor.setNotificationUri(getContext().getContentResolver(),uri);
+        //cursor.setNotificationUri(getContext().getContentResolver(),uri);
         return cursor;
     }
 
@@ -71,21 +70,18 @@ public class FilmProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
         SQLiteDatabase database = filmDbHelper.getReadableDatabase();
         long id ;
-        switch (match){
-            case Film:
-                id = database.insert(FilmContract.FilmEntry.TABLE_NAME,null,values);
-                if (id == -1) {
-                    Log.e(LOG_TAG, "Failed to insert row for " + uri);
-                    return null;
-                }
-                //TODO check if we need the following line of code or not
-                //getContext().getContentResolver().notifyChange(uri,null);
+        if (match == Film) {
+            id = database.insert(FilmContract.FilmEntry.TABLE_NAME, null, values);
+            if (id == -1) {
+                Log.e(LOG_TAG, "Failed to insert row for " + uri);
+                return null;
+            }
+            //getContext().getContentResolver().notifyChange(uri,null);
 
-                // Return the new URI with the ID (of the newly inserted row) appended at the end
-                return ContentUris.withAppendedId(uri, id);
-            default:
-                throw new IllegalArgumentException("insertion is not supported for " + uri);
+            // Return the new URI with the ID (of the newly inserted row) appended at the end
+            return ContentUris.withAppendedId(uri, id);
         }
+        throw new IllegalArgumentException("insertion is not supported for " + uri);
     }
 
     @Override
@@ -93,19 +89,18 @@ public class FilmProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
         SQLiteDatabase database = filmDbHelper.getReadableDatabase();
         int id ;
-        switch (match){
-            case Film:
-                id = database.delete(FilmContract.FilmEntry.TABLE_NAME, selection  ,selectionArgs);
-                if (id == -1) {
-                    Log.e(LOG_TAG, "Failed to delete row for " + uri);
-                }
-                getContext().getContentResolver().notifyChange(uri,null);
+        if (match == Film) {
+            id = database.delete(FilmContract.FilmEntry.TABLE_NAME, selection, selectionArgs);
+            if (id == -1) {
+                Log.e(LOG_TAG, "Failed to delete row for " + uri);
+            }
+            //getContext().getContentResolver().notifyChange(uri,null);
 
-                // Return the new URI with the ID (of the newly inserted row) appended at the end
-                return id;
-            default:
-                throw new IllegalArgumentException("delete is not supported for " + uri);
-        }    }
+            // Return the new URI with the ID (of the newly inserted row) appended at the end
+            return id;
+        }
+        throw new IllegalArgumentException("delete is not supported for " + uri);
+    }
 
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {

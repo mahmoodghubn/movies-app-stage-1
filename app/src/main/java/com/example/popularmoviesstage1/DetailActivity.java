@@ -85,7 +85,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
-        emptyView = (TextView) findViewById(R.id.empty_view);
+        emptyView =  findViewById(R.id.empty_view);
         loadingIndicator = findViewById(R.id.loading_indicator);
         context = getBaseContext();
 
@@ -224,26 +224,39 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
         }));
     }
 
-    @Override
-    public void onClick(String reviewData) {
-    }
-
     private void setFavorite() {
         if (!insideDB) {
             favoriteFilmButton.setImageResource(R.drawable.ic_favorite_solid_24dp);
-            insertFilmInDatabase(film);
+            insertFilmInDatabase(film,context);
         } else {
             favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
-            deleteFilmFromDatabase(Integer.parseInt(film.getId()));
+            deleteFilmFromDatabase(film.getId(),context);
         }
         insideDB = !insideDB;
     }
 
-    private void deleteFilmFromDatabase(int filmId) {
-        getContentResolver().delete(CONTENT_URI, _ID + "=?", new String[]{"" + filmId});
+    public boolean queryFilmFromDatabase(String filmId,Context context){
+        String[] projection = {FilmEntry._ID};
+
+        Cursor cursor = context.getContentResolver().query(CONTENT_URI.buildUpon().appendPath(filmId).build(), projection, _ID + "=?", new String[]{filmId}, null);
+        assert cursor != null;
+        boolean isInside = cursor.moveToFirst();
+        cursor.close();
+        return isInside;
+    }
+    public void deleteFilmFromDatabase(String filmId,Context context) {
+        int deletedRows = context.getContentResolver().delete(CONTENT_URI, _ID + "=?", new String[]{ filmId});
+        if (deletedRows == 0) {
+            // If the new content URI is null, then there was an error with insertion.
+            Toast.makeText(context, context.getString(R.string.editor_delete_film_failed),
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(context, context.getString(R.string.editor_delete_film_successful),
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
-    private void insertFilmInDatabase(Film film) {
+    public void insertFilmInDatabase(Film film,Context context) {
         ContentValues contentValues = new ContentValues();
         contentValues.put(_ID, Integer.parseInt(film.getId()));
         contentValues.put(COLUMN_FILM_TITLE, film.getTitle());
@@ -251,13 +264,13 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
         contentValues.put(COLUMN_VOTE_AVERAGE, film.getVoteAverage());
         contentValues.put(COLUMN_OVERVIEW, film.getOverview());
         contentValues.put(COLUMN_POSTER, film.getPoster());
-        Uri newUri = getContentResolver().insert(CONTENT_URI, contentValues);
+        Uri newUri = context.getContentResolver().insert(CONTENT_URI, contentValues);
         if (newUri == null) {
             // If the new content URI is null, then there was an error with insertion.
-            Toast.makeText(this, getString(R.string.editor_insert_film_failed),
+            Toast.makeText(context, context.getString(R.string.editor_insert_film_failed),
                     Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(this, getString(R.string.editor_insert_film_successful),
+            Toast.makeText(context, context.getString(R.string.editor_insert_film_successful),
                     Toast.LENGTH_SHORT).show();
         }
     }
@@ -272,21 +285,12 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
                 forceLoad();
             }
 
-            @Nullable
+            @NonNull
             @Override
             public Passed loadInBackground() {
+                assert args != null;
                 String filmId = args.getString("film");
-
-                //getting the films of the new page
-                String[] projection = {FilmEntry._ID};
-                Cursor cursor = getContentResolver().query(CONTENT_URI.buildUpon().appendPath(filmId).build(), projection, _ID + "=?", new String[]{filmId}, null);
-                boolean hasObject = false;
-                if (cursor.moveToFirst()) {
-                    hasObject = true;
-                }
-
-                cursor.close();
-
+                boolean hasObject = queryFilmFromDatabase(filmId,context);
                 ArrayList<String> simpleJsonKeysData = new ArrayList<>();
                 ArrayList<String> simpleJsonKeysData2 = new ArrayList<>();
                 URL keyUrl = NetworkUtils.creatingKeyUrl(DetailActivity.this, filmId, "videos");
@@ -361,7 +365,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
 
         if (isConnected && !whenAppLaunchFirstTime) {
             online_situation.setVisibility(View.VISIBLE);
-            online_situation.setText("Back online");
+            online_situation.setText(R.string.back_online);
             online_situation.setBackgroundColor(getResources().getColor(R.color.online));
             CountDownTimer timer = new CountDownTimer(5000, 5000) {
                 public void onTick(long millisUntilFinished) {
