@@ -22,6 +22,7 @@ public class FilmDbHelper extends SQLiteOpenHelper {
                 + FilmEntry.COLUMN_DATE + " TEXT NOT NULL, "
                 + FilmEntry.COLUMN_VOTE_AVERAGE + " TEXT NOT NULL, "
                 + FilmEntry.COLUMN_OVERVIEW + " TEXT, "
+                + FilmEntry.COLUMN_POSTER_URI + " TEXT, "
                 + FilmEntry.COLUMN_POSTER + " TEXT );";
 
         // Execute the SQL statement

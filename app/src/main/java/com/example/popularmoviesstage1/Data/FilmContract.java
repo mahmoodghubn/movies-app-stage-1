@@ -46,6 +46,7 @@ public final class FilmContract {
         public static final String COLUMN_DATE = "date";
         public static final String COLUMN_OVERVIEW = "overview";
         public static final String COLUMN_POSTER = "poster";
+        public static final String COLUMN_POSTER_URI = "poster_URI";
 
     }
 }

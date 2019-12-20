@@ -38,6 +38,7 @@ import com.example.popularmoviesstage1.FilmAdapter.FilmAdapterOnClickHandler;
 import com.example.popularmoviesstage1.Data.FilmContract.*;
 
 import static android.os.SystemClock.sleep;
+import static com.example.popularmoviesstage1.Data.FilmContract.FilmEntry.*;
 import static com.example.popularmoviesstage1.Data.FilmContract.FilmEntry.CONTENT_URI;
 
 public class MainActivity extends AppCompatActivity implements FilmAdapterOnClickHandler
@@ -50,10 +51,10 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     //TODO adding notification if possible
     //TODO adding preferences which page to start off ,the number of movies per page
     //TODO  Add visual polish and styling to your app, including custom colors, fonts and styles, accounting for multiple devices
-    //TODO Try different views, viewgroups and alternative layouts, perform data binding, make your app accessible
+    //TODO Try different views, view groups and alternative layouts, perform data binding, make your app accessible
     //TODO adding comments
+    //TODO reduce the time token to save the image inside the storage
     /*Suggestions to Make Your Project Stand Out!
-    Extend the favorites database to store the movie poster, synopsis, user rating, and release date, and display them even when offline.
     Implement sharing functionality to allow the user to share the first trailer’s YouTube URL from the movie details screen.
     */
     ImageButton nextPage;
@@ -225,8 +226,8 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                 @NonNull
                 @Override
                 public ArrayList<Film> loadInBackground() {
-                    String[] projection = {FilmEntry._ID, FilmEntry.COLUMN_FILM_TITLE, FilmEntry.COLUMN_DATE,
-                            FilmEntry.COLUMN_VOTE_AVERAGE, FilmEntry.COLUMN_POSTER, FilmEntry.COLUMN_OVERVIEW};
+                    String[] projection = {_ID, COLUMN_FILM_TITLE, COLUMN_DATE,
+                            COLUMN_VOTE_AVERAGE, COLUMN_POSTER,COLUMN_POSTER_URI, COLUMN_OVERVIEW};
 
                     Cursor cursor = getContentResolver().query(CONTENT_URI, projection, null, null,
                             null, null);
@@ -240,19 +241,22 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                         int dateColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_DATE);
                         int averageColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_VOTE_AVERAGE);
                         int posterColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_POSTER);
+                        int posterURIColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_POSTER_URI);
                         int overviewColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_OVERVIEW);
 
                         // Iterate through all the returned rows in the cursor
                         while (cursor.moveToNext()) {
                             // Use that index to extract the String or Int value of the word
                             // at the current row the cursor is on.
+
                             int currentID = cursor.getInt(idColumnIndex);
                             String currentFilmTitle = cursor.getString(nameColumnIndex);
                             String currentFilmDate = cursor.getString(dateColumnIndex);
                             String currentAverage = cursor.getString(averageColumnIndex);
                             String currentPoster = cursor.getString(posterColumnIndex);
+                            String currentPosterURI = cursor.getString(posterURIColumnIndex);
                             String currentOverview = cursor.getString(overviewColumnIndex);
-                            favFilm.add(new Film(currentPoster, currentFilmTitle, currentOverview, currentFilmDate, currentAverage, "" + currentID));
+                            favFilm.add(new Film(currentPosterURI,currentPoster, currentFilmTitle, currentOverview, currentFilmDate, currentAverage, "" + currentID));
                         }
                     } finally {
                         // Always close the cursor when you're done reading from it. This releases all its

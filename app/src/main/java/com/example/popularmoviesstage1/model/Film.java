@@ -5,6 +5,16 @@ import java.io.Serializable;
 
 public class Film implements Serializable {
     private String poster;
+
+    public String getPosterURI() {
+        return posterURI;
+    }
+
+    public void setPosterURI(String posterURI) {
+        this.posterURI = posterURI;
+    }
+
+    private String posterURI;
     private String title;
     private String releaseDate;
     private String voteAverage;
@@ -22,6 +32,16 @@ public class Film implements Serializable {
     }
 
     public Film(String poster, String title, String overview, String releaseDate, String voteAverage,String id ){
+        setPoster(poster);
+        setOverview(overview);
+        setReleaseDate(releaseDate);
+        setTitle(title);
+        setVoteAverage(voteAverage);
+        setId(id);
+
+    }
+    public Film(String posterURI,String poster, String title, String overview, String releaseDate, String voteAverage,String id ){
+        setPosterURI(posterURI);
         setPoster(poster);
         setOverview(overview);
         setReleaseDate(releaseDate);
