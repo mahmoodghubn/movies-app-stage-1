@@ -8,8 +8,10 @@ import androidx.loader.content.AsyncTaskLoader;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.SearchView;
 
 import android.annotation.SuppressLint;
+import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -47,14 +49,13 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     //TODO beautifying the detail activity
     //TODO adding animation
     //TODO adding search button
-    //TODO adding notification if possible
     //TODO adding preferences which page to start off ,the number of movies per page
     //TODO  Add visual polish and styling to your app, including custom colors, fonts and styles, accounting for multiple devices
     //TODO Try different views, viewgroups and alternative layouts, perform data binding, make your app accessible
     //TODO adding comments
     /*Suggestions to Make Your Project Stand Out!
-    Extend the favorites database to store the movie poster, synopsis, user rating, and release date, and display them even when offline.
-    Implement sharing functionality to allow the user to share the first trailer’s YouTube URL from the movie details screen.
+    TODO Extend the favorites database to store the movie poster, synopsis, user rating, and release date, and display them even when offline.
+    TODO Implement sharing functionality to allow the user to share the first trailer’s YouTube URL from the movie details screen.
     */
     ImageButton nextPage;
     ImageButton previousPage;
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     Bundle filmBundle;
     //this boolean is to forbid the back online statement from appearing when app first launch and when resuming
     boolean whenAppLaunchFirstTime = true;
+    private String searchQuery;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             @Override
             public void onClick(View view) {
                 int previousPageNumber = Integer.parseInt(thisPage.getText().toString());
-                thisPage.setText(String.valueOf( ++previousPageNumber));
+                thisPage.setText(String.valueOf(++previousPageNumber));
                 Bundle filmBundle = new Bundle();
                 //calculating the new page number
                 pageNumber = new PageNumber(null, previousPageNumber);
@@ -140,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             public void onClick(View view) {
                 int previousPageNumber = Integer.parseInt(thisPage.getText().toString());
                 if (previousPageNumber != 1)
-                    thisPage.setText(String.valueOf( --previousPageNumber));
+                    thisPage.setText(String.valueOf(--previousPageNumber));
                 pageNumber = new PageNumber(null, previousPageNumber);
                 Bundle filmBundle = new Bundle();
                 filmBundle.putSerializable("pageNumber", pageNumber);
@@ -163,16 +165,16 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
-        registerReceiver(internetBroadCastReceiver,internetConnectionIntentFilter);
+        registerReceiver(internetBroadCastReceiver, internetConnectionIntentFilter);
     }
 
     @Override
-    protected void onPause(){
+    protected void onPause() {
         super.onPause();
         unregisterReceiver(internetBroadCastReceiver);
-        whenAppLaunchFirstTime= true;
+        whenAppLaunchFirstTime = true;
     }
 
     @Override
@@ -200,8 +202,12 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                     assert args != null;
                     PageNumber pageNumber = (PageNumber) args.getSerializable("pageNumber");
                     assert pageNumber != null;
-                    URL filmsRequestUrl = NetworkUtils.createUrl(MainActivity.this, String.valueOf(pageNumber.getCurrentPageNumber()), pageNumber.getCurrentPageSort());
-
+                    URL filmsRequestUrl;
+                    if (!pageNumber.getCurrentPageSort().equals("SEARCH")) {
+                        filmsRequestUrl = NetworkUtils.createUrl(MainActivity.this, String.valueOf(pageNumber.getCurrentPageNumber()), pageNumber.getCurrentPageSort());
+                    }else {
+                        filmsRequestUrl = NetworkUtils.createSearchUrl(MainActivity.this,String.valueOf(pageNumber.getCurrentPageNumber()),searchQuery);
+                    }
                     try {
                         String jsonFilmsResponse = NetworkUtils
                                 .getResponseFromHttpUrl(filmsRequestUrl);
@@ -273,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         if (data != null) {
             mRecyclerView.setVisibility(View.VISIBLE);
             emptyView.setVisibility(View.GONE);
-            isDataLoaded =true;
+            isDataLoaded = true;
             mAdapter.setFilmData(data);
         } else {
             mRecyclerView.setVisibility(View.GONE);
@@ -294,8 +300,62 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         MenuInflater inflater = getMenuInflater();
         /* Use the inflater's inflate method to inflate our menu layout to this menu */
         inflater.inflate(R.menu.menu, menu);
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) searchItem.getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setIconifiedByDefault(false);
+
         /* Return true so that the menu is displayed in the Toolbar */
         return true;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleIntent(intent);
+
+    }
+
+    private void handleIntent(Intent intent) {
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            doMySearch(query);
+        }
+    }
+
+    private void doMySearch(String query) {
+        loadingIndicator.setVisibility(View.VISIBLE);
+        mRecyclerView.setVisibility(View.GONE);
+        emptyView.setVisibility(View.GONE);
+        nextPage.setVisibility(View.VISIBLE);
+        previousPage.setVisibility(View.VISIBLE);
+        thisPage.setVisibility(View.VISIBLE);
+        mAdapter.setFilmData(null);
+        pageNumber = new PageNumber(PageType.SEARCH, 1);
+        Bundle filmBundle = new Bundle();
+        filmBundle.putSerializable("pageNumber", pageNumber);
+        searchQuery = query;
+        LoaderManager loaderManager = LoaderManager.getInstance(this);
+        Loader<ArrayList<Film>> loader = loaderManager.getLoader(pageNumber.getCurrentPageNumber());
+        if (loader == null) {
+            loaderManager.initLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
+        } else {
+            loaderManager.restartLoader(pageNumber.getCurrentPageNumber(), filmBundle, this);
+        }
+        thisPage.setText(String.valueOf(pageNumber.getCurrentPageNumber()));
+
     }
 
     @Override
@@ -379,19 +439,16 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             online_situation.setVisibility(View.VISIBLE);
             online_situation.setText(R.string.back_online);
             online_situation.setBackgroundColor(getResources().getColor(R.color.online));
-            CountDownTimer timer = new CountDownTimer(5000, 5000)
-            {
-                public void onTick(long millisUntilFinished)
-                {
+            CountDownTimer timer = new CountDownTimer(5000, 5000) {
+                public void onTick(long millisUntilFinished) {
                 }
 
-                public void onFinish()
-                {
+                public void onFinish() {
                     online_situation.setVisibility(View.GONE);
                 }
             };
             timer.start();
-            if (!isDataLoaded ){
+            if (!isDataLoaded) {
                 Bundle filmBundle = new Bundle();
                 filmBundle.putSerializable("pageNumber", pageNumber);
                 LoaderManager loaderManager = LoaderManager.getInstance(this);
@@ -406,12 +463,12 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                 }
             }
 
-        } else if(!isConnected){
+        } else if (!isConnected) {
             online_situation.setVisibility(View.VISIBLE);
             online_situation.setText(R.string.offline_message);
             online_situation.setBackgroundColor(getResources().getColor(R.color.cardview_dark_background));
         }
-        whenAppLaunchFirstTime =false;
+        whenAppLaunchFirstTime = false;
     }
 
     private class InternetBroadCastReceiver extends BroadcastReceiver {

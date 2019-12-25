@@ -10,13 +10,15 @@ public class PageNumber implements Serializable {
     public enum PageType {
         POPULARITY,
         HIGH_RATED,
-        FAVORITE
+        FAVORITE,
+        SEARCH
     }
 
     private static PageType pageSort = PageType.POPULARITY;
     private static Integer high_rated_page_number = 1;
     private static Integer popularity_page_number = 1;
     private static Integer favorite_page_number = 1;
+    private static Integer search_page_number = 1;
 
     public PageNumber(@Nullable PageType pageType, @Nullable Integer pageNumber) {
         if (pageType != null) {
@@ -27,8 +29,10 @@ public class PageNumber implements Serializable {
                 popularity_page_number = pageNumber;
             } else if (pageSort == PageType.HIGH_RATED) {
                 high_rated_page_number = pageNumber;
-            }else {
+            }else if (pageSort == PageType.FAVORITE){
                 favorite_page_number = pageNumber;
+            }else {
+                search_page_number = pageNumber;
             }
         }
     }
@@ -39,8 +43,10 @@ public class PageNumber implements Serializable {
             return NetworkUtils.POPULARITY;
         } else if (pageSort == PageType.HIGH_RATED) {
             return NetworkUtils.HIGHEST_RATED;
-        }else {
+        }else if (pageSort == PageType.FAVORITE){
             return "FAVORITE";
+        }else {
+            return "SEARCH";
         }
     }
 
@@ -49,8 +55,10 @@ public class PageNumber implements Serializable {
             return popularity_page_number;
         } else if (pageSort == PageType.HIGH_RATED) {
             return high_rated_page_number;
-        }else {
+        }else if (pageSort == PageType.FAVORITE){
             return favorite_page_number;
+        }else {
+            return search_page_number;
         }
     }
 }

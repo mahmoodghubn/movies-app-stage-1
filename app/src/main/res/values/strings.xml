@@ -20,4 +20,7 @@
     <string name="offline_message">you are offline</string>
     <string name="back_online">Back online</string>
     <string name="image_description">film poster</string>
+    <string name="action_search">search</string>
+    <string name="video_search">Search Video</string>
+    <string name="no_videos_available">no videos available</string>
 </resources>

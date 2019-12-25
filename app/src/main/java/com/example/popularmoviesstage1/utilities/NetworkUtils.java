@@ -26,15 +26,14 @@ public class NetworkUtils {
     private  static String API_KEY_NUMBER ;
     public final static String POPULARITY = "popular";
     public final static String HIGHEST_RATED = "top_rated";
-
-
     private final static String POSTER_PATH = "https://image.tmdb.org/t/p/";
     public final static String ORIGINAL = "original";
     public final static String w185 = "w185";
     private static final String LOG_TAG = NetworkUtils.class.getSimpleName();
     private final static String MOVIES_BASE_URL = "http://api.themoviedb.org/3/movie/";
     private final static String PAGE_NUMBER = "page";
-
+    private final static String MOVIES_SEARCH_URL = "https://api.themoviedb.org/3/search/movie?";
+    private final static String QUERY = "query";
     private final static String GETTING_MOVIES_KEY_URL = "http://api.themoviedb.org/3/movie/%1$s";
 
 
@@ -47,6 +46,23 @@ public class NetworkUtils {
         Uri builtUri = Uri.parse(MOVIES_BASE_URL).buildUpon()
                 .appendPath(sort_by)
                 .appendQueryParameter(API_KEY, API_KEY_NUMBER)
+                .appendQueryParameter(PAGE_NUMBER, page_number)
+                .build();
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            Log.e(LOG_TAG, "Problem building the URL ", e);
+        }
+        return url;
+    }
+    public static URL createSearchUrl(Context context,String page_number,  String query) {
+
+        API_KEY_NUMBER = context.getString(R.string.films_api);
+        Uri builtUri = Uri.parse(MOVIES_SEARCH_URL).buildUpon()
+                .appendQueryParameter(API_KEY, API_KEY_NUMBER)
+                .appendQueryParameter(QUERY, query)
                 .appendQueryParameter(PAGE_NUMBER, page_number)
                 .build();
 
