@@ -12,26 +12,24 @@
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         android:layout_marginRight="8dp"
+        android:scrollbars="vertical"
         app:layout_constraintBottom_toTopOf="@id/internet_situation"
-        app:layout_constraintVertical_weight="1"
-        android:scrollbars="vertical">
+        app:layout_constraintVertical_weight="1"></androidx.recyclerview.widget.RecyclerView>
 
-
-    </androidx.recyclerview.widget.RecyclerView>
     <TextView
         android:id="@+id/empty_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:visibility="gone"
-        android:text="@string/no_data_available" />
+        android:text="@string/no_data_available"
+        android:visibility="gone" />
     <!-- Loading indicator is only shown before the first load -->
     <ProgressBar
         android:id="@+id/loading_indicator"
         style="@style/Widget.AppCompat.ProgressBar"
-        android:gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:gravity="center" />
 
     <LinearLayout
         android:id="@+id/linear"
@@ -41,7 +39,6 @@
         app:layout_constraintBottom_toTopOf="@id/internet_situation"
         app:layout_constraintEnd_toEndOf="@+id/recycler_view"
         app:layout_constraintStart_toStartOf="@+id/recycler_view">
-
 
         <ImageButton
             android:id="@+id/ic_left"
@@ -53,37 +50,37 @@
         <TextView
             android:id="@+id/page_number"
             android:layout_width="40dp"
-            android:text="1"
-            android:textColor="#ffff00"
-            android:inputType="number"
-            android:gravity="center"
-            android:background="#263238"
             android:layout_height="match_parent"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginBottom="8dp"
-            android:paddingBottom="4dp"
+            android:background="#263238"
+            android:gravity="center"
+            android:inputType="number"
             android:paddingTop="4dp"
-            android:scrollbars="horizontal" />
+            android:paddingBottom="4dp"
+            android:scrollbars="horizontal"
+            android:text="1"
+            android:textColor="#ffff00" />
 
         <ImageButton
             android:id="@+id/ic_right"
             android:layout_width="40dp"
             android:layout_height="match_parent"
             android:layout_marginBottom="8dp"
-            android:src="@drawable/ic_right"/>
-
+            android:src="@drawable/ic_right" />
     </LinearLayout>
+
     <TextView
         android:id="@+id/internet_situation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginBottom="0dp"
         android:textAlignment="center"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/recycler_view"
-        app:layout_constraintStart_toStartOf="@+id/recycler_view"
-        android:layout_marginBottom="0dp"
-        android:layout_marginLeft="0dp"
-        android:layout_marginRight="0dp"/>
+        app:layout_constraintStart_toStartOf="@+id/recycler_view" />
 </androidx.constraintlayout.widget.ConstraintLayout>

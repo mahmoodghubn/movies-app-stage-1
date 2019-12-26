@@ -23,4 +23,6 @@
     <string name="action_search">search</string>
     <string name="video_search">Search Video</string>
     <string name="no_videos_available">no videos available</string>
+    <string name="sort_criteria">sort criteria</string>
+    <string name="delete_history">delete history</string>
 </resources>

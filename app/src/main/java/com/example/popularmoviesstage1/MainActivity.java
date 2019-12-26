@@ -9,6 +9,7 @@ import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
 
 import android.annotation.SuppressLint;
 import android.app.SearchManager;
@@ -21,6 +22,7 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.provider.SearchRecentSuggestions;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -28,6 +30,7 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.example.popularmoviesstage1.Data.MySuggestionProvider;
 import com.example.popularmoviesstage1.model.Film;
 import com.example.popularmoviesstage1.model.PageNumber;
 import com.example.popularmoviesstage1.model.PageNumber.*;
@@ -57,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     TODO Extend the favorites database to store the movie poster, synopsis, user rating, and release date, and display them even when offline.
     TODO Implement sharing functionality to allow the user to share the first trailer’s YouTube URL from the movie details screen.
     */
+
     ImageButton nextPage;
     ImageButton previousPage;
     TextView thisPage;
@@ -79,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         emptyView = findViewById(R.id.empty_view);
         loadingIndicator = findViewById(R.id.loading_indicator);
         thisPage = findViewById(R.id.page_number);
@@ -205,8 +210,8 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                     URL filmsRequestUrl;
                     if (!pageNumber.getCurrentPageSort().equals("SEARCH")) {
                         filmsRequestUrl = NetworkUtils.createUrl(MainActivity.this, String.valueOf(pageNumber.getCurrentPageNumber()), pageNumber.getCurrentPageSort());
-                    }else {
-                        filmsRequestUrl = NetworkUtils.createSearchUrl(MainActivity.this,String.valueOf(pageNumber.getCurrentPageNumber()),searchQuery);
+                    } else {
+                        filmsRequestUrl = NetworkUtils.createSearchUrl(MainActivity.this, String.valueOf(pageNumber.getCurrentPageNumber()), searchQuery);
                     }
                     try {
                         String jsonFilmsResponse = NetworkUtils
@@ -332,6 +337,9 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
             doMySearch(query);
+            SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
+                    MySuggestionProvider.AUTHORITY, MySuggestionProvider.MODE);
+            suggestions.saveRecentQuery(query, null);
         }
     }
 
@@ -428,6 +436,11 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             }
             thisPage.setText(String.valueOf(pageNumber.getCurrentPageNumber()));
 
+        }else if (id == R.id.delete_history){
+            //deleting the history of the search
+            SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
+                    MySuggestionProvider.AUTHORITY, MySuggestionProvider.MODE);
+            suggestions.clearHistory();
         }
         return super.onOptionsItemSelected(item);
     }
