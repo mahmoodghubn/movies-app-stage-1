@@ -24,6 +24,7 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.provider.SearchRecentSuggestions;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -47,7 +48,7 @@ import static android.os.SystemClock.sleep;
 import static com.example.popularmoviesstage1.Data.FilmContract.FilmEntry.CONTENT_URI;
 
 public class MainActivity extends AppCompatActivity implements FilmAdapterOnClickHandler
-        , LoaderManager.LoaderCallbacks<ArrayList<Film>> {
+        , LoaderManager.LoaderCallbacks<ArrayList<Film>>,SharedPreferences.OnSharedPreferenceChangeListener {
     //TODO beautifying decorate the page buttons
     //TODO change the layout of landscape mode for the main view
     //TODO beautifying the detail activity
@@ -75,13 +76,22 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     boolean whenAppLaunchFirstTime = true;
     private String searchQuery;
     boolean inPreferences;
+    boolean isNightMood;
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        isNightMood = sharedPreferences.getBoolean("night_mood",false);
+        if (isNightMood){
+            setTheme(R.style.AppTheme2);
+        }
         setContentView(R.layout.activity_main);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
 
         emptyView = findViewById(R.id.empty_view);
         loadingIndicator = findViewById(R.id.loading_indicator);
@@ -92,9 +102,9 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         mRecyclerView = findViewById(R.id.recycler_view);
         pageNumber = new PageNumber(null, null);
 
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         editor = sharedPreferences.edit();
         inPreferences = sharedPreferences.getBoolean("home_page",true);
+
         if (inPreferences){
             PageNumber.setPopularity_page_number(sharedPreferences.getInt("popular",1));
             PageNumber.setHigh_rated_page_number(sharedPreferences.getInt("top_rated",1));
@@ -177,6 +187,11 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     }
 
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+    }
     private void setVisibility(@Nullable Integer loadingIndicator,@Nullable Integer mRecyclerView,@Nullable Integer emptyView ,@Nullable Integer previousPage,@Nullable Integer thisPage,@Nullable Integer nextPage){
         if (loadingIndicator !=null)
             this.loadingIndicator.setVisibility(loadingIndicator);
@@ -483,6 +498,20 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             online_situation.setBackgroundColor(getResources().getColor(R.color.cardview_dark_background));
         }
         whenAppLaunchFirstTime = false;
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals("night_mood")){
+            boolean b = sharedPreferences.getBoolean("night_mood",false);
+            if(sharedPreferences.getBoolean("night_mood",false)){
+                setTheme(R.style.AppTheme);
+            }else {
+                setTheme(R.style.AppTheme2);
+            }
+            recreate();
+
+        }
     }
 
     private class InternetBroadCastReceiver extends BroadcastReceiver {

@@ -6,4 +6,10 @@
         android:summaryOff="no"
         android:summaryOn="yes"
         android:title="continue where I left off"/>
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="night_mood"
+        android:summaryOff="not activated"
+        android:summaryOn="activated"
+        android:title="activated the night mood"/>
 </PreferenceScreen>
