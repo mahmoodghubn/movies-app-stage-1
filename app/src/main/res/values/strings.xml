@@ -25,4 +25,6 @@
     <string name="no_videos_available">no videos available</string>
     <string name="sort_criteria">sort criteria</string>
     <string name="delete_history">delete history</string>
+    <string name="settings">setting</string>
+    <string name="action_settings">settings activity</string>
 </resources>
