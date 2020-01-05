@@ -1,12 +1,11 @@
 <resources>
-    <string name="app_name">popular movies stage 1</string>
+    <string name="app_name">popular movies</string>
     <string name="most_popular">most popular</string>
     <string name="highest_rated">highest rated</string>
-    <string name="vote_average">Vote Average</string>
     <string name="date">Date</string>
     <string name="overview">Overview</string>
     <string name="film_poster">film poster</string>
-    <string name="users_reviews">users reviews</string>
+    <string name="users_reviews">Users Reviews</string>
     <string name="favorite">favorite</string>
     <string name="favorite_button">favorite</string>
     <string name="editor_insert_film_successful">Film saved</string>

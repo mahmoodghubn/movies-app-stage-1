@@ -14,21 +14,21 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".SettingsActivity"
+        <activity android:name="com.example.popularmoviesstage1.SettingsActivity"
             android:label="@string/action_settings"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName="com.example.popularmoviesstage1.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity"/>
+                android:value="com.example.popularmoviesstage1.MainActivity"/>
         </activity>
 
         <provider
-            android:name=".Data.MySuggestionProvider"
+            android:name="com.example.popularmoviesstage1.Data.MySuggestionProvider"
             android:authorities="com.example.popularmoviesstage1.Data.MySuggestionProvider" />
 
-        <activity android:name=".DetailActivity" />
+        <activity android:name="com.example.popularmoviesstage1.DetailActivity" />
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.popularmoviesstage1.MainActivity"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -45,7 +45,7 @@
         </activity>
 
         <provider
-            android:name=".Data.FilmProvider"
+            android:name="com.example.popularmoviesstage1.Data.FilmProvider"
             android:authorities="com.example.popularmoviesstage1"
             android:exported="false" />
     </application>

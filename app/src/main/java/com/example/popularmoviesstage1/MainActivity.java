@@ -48,19 +48,13 @@ import static android.os.SystemClock.sleep;
 import static com.example.popularmoviesstage1.Data.FilmContract.FilmEntry.CONTENT_URI;
 
 public class MainActivity extends AppCompatActivity implements FilmAdapterOnClickHandler
-        , LoaderManager.LoaderCallbacks<ArrayList<Film>>,SharedPreferences.OnSharedPreferenceChangeListener {
-    //TODO beautifying decorate the page buttons
-    //TODO change the layout of landscape mode for the main view
-    //TODO beautifying the detail activity
-    //TODO adding animation
+        , LoaderManager.LoaderCallbacks<ArrayList<Film>>, SharedPreferences.OnSharedPreferenceChangeListener {
     //TODO  Add visual polish and styling to your app, including custom colors, fonts and styles, accounting for multiple devices
     //TODO Try different views, viewgroups and alternative layouts, perform data binding, make your app accessible
+    //TODO adding animation
     //TODO adding comments
-    /*Suggestions to Make Your Project Stand Out
-    TODO Extend the favorites database to store the movie poster, synopsis, user rating, and release date, and display them even when offline.
-    TODO Implement sharing functionality to allow the user to share the first trailer’s YouTube URL from the movie details screen.
-    */
-
+    //TODO Implement sharing functionality to allow the user to share the first trailer’s YouTube URL from the movie details screen.
+    //TODO beautifying decorate the page buttons
     ImageButton nextPage;
     ImageButton previousPage;
     TextView thisPage;
@@ -76,18 +70,16 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     boolean whenAppLaunchFirstTime = true;
     private String searchQuery;
     boolean inPreferences;
-    boolean isNightMood;
+    static boolean isBrightMood;
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        isNightMood = sharedPreferences.getBoolean("night_mood",false);
-        if (isNightMood){
+        isBrightMood = sharedPreferences.getBoolean("bright", false);
+        if (isBrightMood) {
             setTheme(R.style.AppTheme2);
         }
         setContentView(R.layout.activity_main);
@@ -103,18 +95,18 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         pageNumber = new PageNumber(null, null);
 
         editor = sharedPreferences.edit();
-        inPreferences = sharedPreferences.getBoolean("home_page",true);
+        inPreferences = sharedPreferences.getBoolean("home_page", true);
 
-        if (inPreferences){
-            PageNumber.setPopularity_page_number(sharedPreferences.getInt("popular",1));
-            PageNumber.setHigh_rated_page_number(sharedPreferences.getInt("top_rated",1));
-            PageNumber.setFavorite_page_number(sharedPreferences.getInt("favorite",1));
-            PageNumber.setSearch_page_number(sharedPreferences.getInt("search",1));
-            PageNumber.setPageSort(sharedPreferences.getString("page_sort","POPULARITY"));
-            searchQuery = sharedPreferences.getString("search_query","");
+        if (inPreferences) {
+            PageNumber.setPopularity_page_number(sharedPreferences.getInt("popular", 1));
+            PageNumber.setHigh_rated_page_number(sharedPreferences.getInt("top_rated", 1));
+            PageNumber.setFavorite_page_number(sharedPreferences.getInt("favorite", 1));
+            PageNumber.setSearch_page_number(sharedPreferences.getInt("search", 1));
+            PageNumber.setPageSort(sharedPreferences.getString("page_sort", "POPULARITY"));
+            searchQuery = sharedPreferences.getString("search_query", "");
             thisPage.setText(String.valueOf(pageNumber.getCurrentPageNum()));
-            if(pageNumber.getCurrentPageSort().equals("FAVORITE"))
-                setVisibility(View.VISIBLE,View.GONE,View.GONE,View.GONE,View.GONE,View.GONE);
+            if (pageNumber.getCurrentPageSort().equals("FAVORITE"))
+                setVisibility(View.VISIBLE, View.GONE, View.GONE, View.GONE, View.GONE, View.GONE);
 
         }
 
@@ -152,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                 LoaderManager loaderManager = LoaderManager.getInstance(MainActivity.this);
                 int PNom = pageNumber.getCurrentPageNum();
                 Loader<ArrayList<Film>> loader = loaderManager.getLoader(PNom);
-                setVisibility(View.VISIBLE,View.GONE,View.GONE,null,null,null);
+                setVisibility(View.VISIBLE, View.GONE, View.GONE, null, null, null);
                 if (loader == null) {
                     loaderManager.initLoader(PNom, null, MainActivity.this);
                 } else {
@@ -172,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                     int PNom = pageNumber.getCurrentPageNum();
                     Loader<ArrayList<Film>> loader = loaderManager.getLoader(PNom);
                     //this line of code because the loading indicator will be set to gone after load is finish
-                    setVisibility(View.VISIBLE,View.GONE,View.GONE,null,null,null);
+                    setVisibility(View.VISIBLE, View.GONE, View.GONE, null, null, null);
                     if (loader == null) {
                         loaderManager.initLoader(PNom, null, MainActivity.this);
                     } else {
@@ -192,18 +184,19 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         super.onDestroy();
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
-    private void setVisibility(@Nullable Integer loadingIndicator,@Nullable Integer mRecyclerView,@Nullable Integer emptyView ,@Nullable Integer previousPage,@Nullable Integer thisPage,@Nullable Integer nextPage){
-        if (loadingIndicator !=null)
+
+    private void setVisibility(@Nullable Integer loadingIndicator, @Nullable Integer mRecyclerView, @Nullable Integer emptyView, @Nullable Integer previousPage, @Nullable Integer thisPage, @Nullable Integer nextPage) {
+        if (loadingIndicator != null)
             this.loadingIndicator.setVisibility(loadingIndicator);
-        if (mRecyclerView !=null)
+        if (mRecyclerView != null)
             this.mRecyclerView.setVisibility(mRecyclerView);
-        if (emptyView!=null)
+        if (emptyView != null)
             this.emptyView.setVisibility(emptyView);
-        if (previousPage!=null)
+        if (previousPage != null)
             this.previousPage.setVisibility(previousPage);
-        if (nextPage!=null)
+        if (nextPage != null)
             this.nextPage.setVisibility(nextPage);
-        if (thisPage!=null)
+        if (thisPage != null)
             this.thisPage.setVisibility(thisPage);
     }
 
@@ -218,13 +211,13 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         super.onPause();
         unregisterReceiver(internetBroadCastReceiver);
         whenAppLaunchFirstTime = true;
-        if (inPreferences){
-            editor.putInt("popular",PageNumber.getPopularity_page_number());
-            editor.putInt("top_rated",PageNumber.getHigh_rated_page_number());
-            editor.putInt("favorite",PageNumber.getFavorite_page_number());
-            editor.putInt("search",PageNumber.getSearch_page_number());
-            editor.putString("page_sort",pageNumber.getCurrentPageSort());
-            editor.putString("search_query",searchQuery);
+        if (inPreferences) {
+            editor.putInt("popular", PageNumber.getPopularity_page_number());
+            editor.putInt("top_rated", PageNumber.getHigh_rated_page_number());
+            editor.putInt("favorite", PageNumber.getFavorite_page_number());
+            editor.putInt("search", PageNumber.getSearch_page_number());
+            editor.putString("page_sort", pageNumber.getCurrentPageSort());
+            editor.putString("search_query", searchQuery);
             editor.commit();
         }
     }
@@ -239,6 +232,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     @NonNull
     @Override
     public Loader<ArrayList<Film>> onCreateLoader(int id, @Nullable final Bundle args) {
+        Log.i("vvvv",pageNumber.getCurrentPageSort());
         if (!pageNumber.getCurrentPageSort().equals("FAVORITE")) {
             return new AsyncTaskLoader<ArrayList<Film>>(this) {
                 @Override
@@ -281,7 +275,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                 @Override
                 public ArrayList<Film> loadInBackground() {
                     String[] projection = {FilmEntry._ID, FilmEntry.COLUMN_FILM_TITLE, FilmEntry.COLUMN_DATE,
-                            FilmEntry.COLUMN_VOTE_AVERAGE, FilmEntry.COLUMN_POSTER, FilmEntry.COLUMN_OVERVIEW};
+                            FilmEntry.COLUMN_VOTE_AVERAGE, FilmEntry.COLUMN_POSTER, FilmEntry.COLUMN_OVERVIEW, FilmEntry.COLUMN_BACKDROP_PATH};
 
                     Cursor cursor = getContentResolver().query(CONTENT_URI, projection, null, null,
                             null, null);
@@ -296,6 +290,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                         int averageColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_VOTE_AVERAGE);
                         int posterColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_POSTER);
                         int overviewColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_OVERVIEW);
+                        int backdropPathColumnIndex = cursor.getColumnIndex(FilmEntry.COLUMN_BACKDROP_PATH);
 
                         // Iterate through all the returned rows in the cursor
                         while (cursor.moveToNext()) {
@@ -307,7 +302,8 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                             String currentAverage = cursor.getString(averageColumnIndex);
                             String currentPoster = cursor.getString(posterColumnIndex);
                             String currentOverview = cursor.getString(overviewColumnIndex);
-                            favFilm.add(new Film(currentPoster, currentFilmTitle, currentOverview, currentFilmDate, currentAverage, "" + currentID));
+                            String currentBackdropPath = cursor.getString(backdropPathColumnIndex);
+                            favFilm.add(new Film(currentPoster, currentFilmTitle, currentOverview, currentFilmDate, currentAverage, "" + currentID, currentBackdropPath));
                         }
                     } finally {
                         // Always close the cursor when you're done reading from it. This releases all its
@@ -325,11 +321,11 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     public void onLoadFinished(@NonNull Loader<ArrayList<Film>> loader, ArrayList<Film> data) {
 
         if (data != null) {
-            setVisibility(View.GONE,View.VISIBLE,View.GONE,null,null,null);
+            setVisibility(View.GONE, View.VISIBLE, View.GONE, null, null, null);
             isDataLoaded = true;
             mAdapter.setFilmData(data);
         } else {
-            setVisibility(View.GONE,View.GONE,View.VISIBLE,null,null,null);
+            setVisibility(View.GONE, View.GONE, View.VISIBLE, null, null, null);
             isDataLoaded = false;
         }
     }
@@ -382,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     }
 
     private void doMySearch(String query) {
-        setVisibility(View.VISIBLE,View.GONE,View.GONE,View.VISIBLE,View.VISIBLE,View.VISIBLE);
+        setVisibility(View.VISIBLE, View.GONE, View.GONE, View.VISIBLE, View.VISIBLE, View.VISIBLE);
         mAdapter.setFilmData(null);
         pageNumber = new PageNumber(PageType.SEARCH, 1);
         searchQuery = query;
@@ -408,7 +404,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.most_popular && !pageNumber.getCurrentPageSort().equals(NetworkUtils.POPULARITY)) {
-            setVisibility(View.VISIBLE,View.GONE,View.GONE,View.VISIBLE,View.VISIBLE,View.VISIBLE);
+            setVisibility(View.VISIBLE, View.GONE, View.GONE, View.VISIBLE, View.VISIBLE, View.VISIBLE);
             mAdapter.setFilmData(null);
             pageNumber = new PageNumber(PageType.POPULARITY, null);
             int PNom = pageNumber.getCurrentPageNum();
@@ -422,11 +418,11 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             thisPage.setText(String.valueOf(PNom));
             return true;
         } else if (id == R.id.highest_rated && !pageNumber.getCurrentPageSort().equals(NetworkUtils.HIGHEST_RATED)) {
-            setVisibility(View.VISIBLE,View.GONE,View.GONE,View.VISIBLE,View.VISIBLE,View.VISIBLE);
+            setVisibility(View.VISIBLE, View.GONE, View.GONE, View.VISIBLE, View.VISIBLE, View.VISIBLE);
             mAdapter.setFilmData(null);
             pageNumber = new PageNumber(PageType.TOP_RATED, null);
             int PNom = pageNumber.getCurrentPageNum();
-            
+
             LoaderManager loaderManager = LoaderManager.getInstance(this);
             Loader<ArrayList<Film>> loader = loaderManager.getLoader(PNom);
             if (loader == null) {
@@ -437,7 +433,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             thisPage.setText(String.valueOf(PNom));
             return true;
         } else if (id == R.id.favorite && !pageNumber.getCurrentPageSort().equals("FAVORITE")) {
-            setVisibility(View.VISIBLE,View.GONE,View.GONE,View.GONE,View.GONE,View.GONE);
+            setVisibility(View.VISIBLE, View.GONE, View.GONE, View.GONE, View.GONE, View.GONE);
             mAdapter.setFilmData(null);
             pageNumber = new PageNumber(PageType.FAVORITE, null);
             int PNom = pageNumber.getCurrentPageNum();
@@ -450,13 +446,13 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             }
             thisPage.setText(String.valueOf(PNom));
 
-        }else if (id == R.id.delete_history){
+        } else if (id == R.id.delete_history) {
             //deleting the history of the search
             SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
                     MySuggestionProvider.AUTHORITY, MySuggestionProvider.MODE);
             suggestions.clearHistory();
-        }else if (id == R.id.settings){
-            Intent startSettingsActivity = new Intent(this,SettingsActivity.class);
+        } else if (id == R.id.settings) {
+            Intent startSettingsActivity = new Intent(this, SettingsActivity.class);
             startActivity(startSettingsActivity);
             return true;
         }
@@ -483,7 +479,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                 //the id of the loader is the same as page number
                 int PNom = pageNumber.getCurrentPageNum();
                 Loader<ArrayList<Film>> loader = loaderManager.getLoader(PNom);
-                setVisibility(View.VISIBLE,null,View.GONE,null,null,null);
+                setVisibility(View.VISIBLE, null, View.GONE, null, null, null);
 
                 if (loader == null) {
                     loaderManager.initLoader(PNom, null, this);
@@ -502,11 +498,10 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals("night_mood")){
-            boolean b = sharedPreferences.getBoolean("night_mood",false);
-            if(sharedPreferences.getBoolean("night_mood",false)){
+        if (key.equals("bright")) {
+            if (sharedPreferences.getBoolean("bright", false)) {
                 setTheme(R.style.AppTheme);
-            }else {
+            } else {
                 setTheme(R.style.AppTheme2);
             }
             recreate();

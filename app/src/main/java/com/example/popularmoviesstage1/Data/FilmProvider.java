@@ -54,7 +54,6 @@ public class FilmProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("unknown uri");
         }
-        //cursor.setNotificationUri(getContext().getContentResolver(),uri);
         return cursor;
     }
 
@@ -76,9 +75,6 @@ public class FilmProvider extends ContentProvider {
                 Log.e(LOG_TAG, "Failed to insert row for " + uri);
                 return null;
             }
-            //getContext().getContentResolver().notifyChange(uri,null);
-
-            // Return the new URI with the ID (of the newly inserted row) appended at the end
             return ContentUris.withAppendedId(uri, id);
         }
         throw new IllegalArgumentException("insertion is not supported for " + uri);
@@ -94,9 +90,6 @@ public class FilmProvider extends ContentProvider {
             if (id == -1) {
                 Log.e(LOG_TAG, "Failed to delete row for " + uri);
             }
-            //getContext().getContentResolver().notifyChange(uri,null);
-
-            // Return the new URI with the ID (of the newly inserted row) appended at the end
             return id;
         }
         throw new IllegalArgumentException("delete is not supported for " + uri);

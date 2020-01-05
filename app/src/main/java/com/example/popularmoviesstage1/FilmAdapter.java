@@ -76,7 +76,7 @@ public class FilmAdapter extends RecyclerView.Adapter<FilmAdapter.FilmAdapterVie
         if (isInsideDb){
             filmAdapterViewHolder.favoriteFilmButton.setImageResource(R.drawable.ic_favorite_solid_24dp);
         }else {
-            filmAdapterViewHolder.favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
+            filmAdapterViewHolder.favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_white_24dp);
 
         }
         filmAdapterViewHolder.favoriteFilmButton.setOnClickListener(new OnClickListener() {
@@ -87,7 +87,7 @@ public class FilmAdapter extends RecyclerView.Adapter<FilmAdapter.FilmAdapterVie
                     filmAdapterViewHolder.favoriteFilmButton.setImageResource(R.drawable.ic_favorite_solid_24dp);
                     new DetailActivity().insertFilmInDatabase(mFilmsData.get(position),context);
                 } else {
-                    filmAdapterViewHolder.favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
+                    filmAdapterViewHolder.favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_white_24dp);
                     new DetailActivity().deleteFilmFromDatabase(mFilmsData.get(position).getId(),context);
                 }
                 if (pageNumber.getCurrentPageSort().equals("FAVORITE")){

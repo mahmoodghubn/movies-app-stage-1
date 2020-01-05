@@ -15,6 +15,7 @@ import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,16 +43,18 @@ import com.example.popularmoviesstage1.ReviewAdapter.ReviewAdapterOnClickHandler
 
 import static android.os.SystemClock.sleep;
 import static com.example.popularmoviesstage1.Data.FilmContract.FilmEntry.*;
+import static com.example.popularmoviesstage1.MainActivity.isBrightMood;
 
 public class DetailActivity extends AppCompatActivity implements ReviewAdapterOnClickHandler, LoaderManager.LoaderCallbacks<DetailActivity.Passed> {
 
     private static final String TAG = DetailActivity.class.getSimpleName();
 
-    ImageView imageView;
+    ImageView filmImageView;
+    ImageView backdropImageView;
     TextView title;
     TextView date;
     TextView overview;
-    TextView voteAverage;
+    RatingBar voteAverage;
     private ImageView favoriteFilmButton;
 
     Film film;
@@ -78,19 +81,32 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
     boolean whenAppLaunchFirstTime = true;
     Bundle filmBundle;
     String filmUrl;
-
+    String backdropUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (isBrightMood){
+            setTheme(R.style.DetailActivity2);
+        }else {
+            setTheme(R.style.DetailActivity);
+        }
         setContentView(R.layout.activity_detail);
+        favoriteFilmButton = findViewById(R.id.iv_favButton);
+        if (isBrightMood){
+            favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
+        }else {
+            favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_white_24dp);
+        }
 
         emptyView =  findViewById(R.id.empty_view);
         loadingIndicator = findViewById(R.id.loading_indicator);
         context = getBaseContext();
 
-        favoriteFilmButton = findViewById(R.id.iv_favButton);
-        imageView = findViewById(R.id.film_image);
+
+        filmImageView = findViewById(R.id.film_image);
+        backdropImageView = findViewById(R.id.film_backdrop);
 
         film = (Film) getIntent().getSerializableExtra("FilmClass");
         filmBundle = new Bundle();
@@ -126,8 +142,10 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
 
     private void bindingData() {
         String poster = film.getPoster();
+        String backdrop = film.getBackdrop_path();
+        filmUrl = NetworkUtils.buildPosterUrl(poster, NetworkUtils.w185);
+        backdropUrl = NetworkUtils.buildPosterUrl(backdrop, NetworkUtils.ORIGINAL);
 
-        filmUrl = NetworkUtils.buildPosterUrl(poster, NetworkUtils.ORIGINAL);
         // Get a reference to the ConnectivityManager to check state of network connectivity
         ConnectivityManager connMgr = (ConnectivityManager)
                 getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -138,14 +156,18 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
         if (networkInfo != null && networkInfo.isConnected()) {
             Picasso.with(this)
                     .load(filmUrl)
-                    .into(imageView);
+                    .into(filmImageView);
+            Picasso.with(this)
+                    .load(backdropUrl)
+                    .into(backdropImageView);
             isImageLoaded = true;
         }
 
         title = findViewById(R.id.film_title);
         title.setText(film.getTitle());
         voteAverage = findViewById(R.id.vote_average);
-        voteAverage.setText(film.getVoteAverage());
+        voteAverage.setRating(Float.valueOf(film.getVoteAverage()));
+
         date = findViewById(R.id.date);
         date.setText(film.getReleaseDate());
         overview = findViewById(R.id.overview);
@@ -163,8 +185,6 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
             return;
 
         youTubePlayerFragment.initialize(context.getString(R.string.youtube_api), new YouTubePlayer.OnInitializedListener() {
-
-
             @Override
             public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer player,
                                                 boolean wasRestored) {
@@ -229,7 +249,11 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
             favoriteFilmButton.setImageResource(R.drawable.ic_favorite_solid_24dp);
             insertFilmInDatabase(film,context);
         } else {
-            favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
+            if (isBrightMood){
+                favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
+            }else {
+                favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_white_24dp);
+            }
             deleteFilmFromDatabase(film.getId(),context);
         }
         insideDB = !insideDB;
@@ -263,6 +287,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
         contentValues.put(COLUMN_DATE, film.getReleaseDate());
         contentValues.put(COLUMN_VOTE_AVERAGE, film.getVoteAverage());
         contentValues.put(COLUMN_OVERVIEW, film.getOverview());
+        contentValues.put(COLUMN_BACKDROP_PATH, film.getBackdrop_path());
         contentValues.put(COLUMN_POSTER, film.getPoster());
         Uri newUri = context.getContentResolver().insert(CONTENT_URI, contentValues);
         if (newUri == null) {
@@ -331,6 +356,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
             } else {
                 recyclerView.setVisibility(View.GONE);
                 emptyView.setVisibility(View.VISIBLE);
+
             }
             if (passed.JSONData2 != null && passed.JSONData2.size() != 0) {
                 mAdapter.setReviewData(passed.JSONData2);
@@ -391,7 +417,10 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
             if (!isImageLoaded) {
                 Picasso.with(this)
                         .load(filmUrl)
-                        .into(imageView);
+                        .into(filmImageView);
+                Picasso.with(this)
+                        .load(backdropUrl)
+                        .into(backdropImageView);
                 isImageLoaded = true;
             }
         } else if (!isConnected) {

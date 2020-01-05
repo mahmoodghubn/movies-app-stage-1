@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="image_margin">8dp</dimen>
+    <dimen name="image_margin">16dp</dimen>
     <dimen name="title_marginLeft">8dp</dimen>
     <dimen name="title_marginRight">8dp</dimen>
     <dimen name="title_marginBottom">8dp</dimen>
@@ -9,7 +9,7 @@
     <dimen name="heads_marginRight">8dp</dimen>
     <dimen name="heads_marginBottom">8dp</dimen>
     <dimen name="heads_text_size">16sp</dimen>
-    <dimen name="data_marginLeft">16dp</dimen>
+    <dimen name="data_marginLeft">8dp</dimen>
     <dimen name="data_marginRight">8dp</dimen>
     <dimen name="data_marginBottom">8dp</dimen>
     <dimen name="data_text_size">16sp</dimen>

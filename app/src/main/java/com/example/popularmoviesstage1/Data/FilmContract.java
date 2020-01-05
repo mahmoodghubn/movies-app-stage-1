@@ -1,8 +1,6 @@
 package com.example.popularmoviesstage1.Data;
 
 
-import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
@@ -46,6 +44,7 @@ public final class FilmContract {
         public static final String COLUMN_DATE = "date";
         public static final String COLUMN_OVERVIEW = "overview";
         public static final String COLUMN_POSTER = "poster";
+        public static final String COLUMN_BACKDROP_PATH = "backdrop_path";
 
     }
 }

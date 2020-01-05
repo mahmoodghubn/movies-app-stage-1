@@ -5,7 +5,6 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.example.popularmoviesstage1.MainActivity;
 import com.example.popularmoviesstage1.R;
 import com.example.popularmoviesstage1.model.Film;
 
@@ -194,9 +193,10 @@ public class NetworkUtils {
                 String overview = currentFilm.getString("overview");
                 String releaseDate = currentFilm.getString("release_date");
                 String voteAverage = currentFilm.getString("vote_average");
+                String backdrop_path = currentFilm.getString("backdrop_path");
                 String id = currentFilm.getString("id");
                 if (!posterPath.equals("null")) {
-                    Film film = new Film(posterPath, title, overview, releaseDate, voteAverage, id);
+                    Film film = new Film(posterPath, title, overview, releaseDate, voteAverage, id,backdrop_path);
                     films.add(film);
                 }
             }

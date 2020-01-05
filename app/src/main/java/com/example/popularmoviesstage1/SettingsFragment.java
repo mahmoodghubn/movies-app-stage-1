@@ -1,5 +1,4 @@
 package com.example.popularmoviesstage1;
-//import androidx.preference.Preference;
 
 import android.os.Bundle;
 

@@ -8,8 +8,8 @@
         android:title="continue where I left off"/>
     <CheckBoxPreference
         android:defaultValue="false"
-        android:key="night_mood"
+        android:key="bright"
         android:summaryOff="not activated"
         android:summaryOn="activated"
-        android:title="activated the night mood"/>
+        android:title="activate the bright mood"/>
 </PreferenceScreen>

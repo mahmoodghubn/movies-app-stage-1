@@ -1,6 +1,5 @@
 package com.example.popularmoviesstage1.model;
 
-
 import java.io.Serializable;
 
 public class Film implements Serializable {
@@ -10,8 +9,25 @@ public class Film implements Serializable {
     private String voteAverage;
     private String overview;
     private String id;
+    private String backdrop_path;
 
+    public Film(String poster, String title, String overview, String releaseDate, String voteAverage,String id ,String backdrop_path){
+        setPoster(poster);
+        setOverview(overview);
+        setReleaseDate(releaseDate);
+        setTitle(title);
+        setVoteAverage(voteAverage);
+        setId(id);
+        setBackdrop_path(backdrop_path);
 
+    }
+    public String getBackdrop_path() {
+        return backdrop_path;
+    }
+
+    public void setBackdrop_path(String backdrop_path) {
+        this.backdrop_path = backdrop_path;
+    }
 
     public String getId() {
         return id;
@@ -21,15 +37,6 @@ public class Film implements Serializable {
         this.id = id;
     }
 
-    public Film(String poster, String title, String overview, String releaseDate, String voteAverage,String id ){
-        setPoster(poster);
-        setOverview(overview);
-        setReleaseDate(releaseDate);
-        setTitle(title);
-        setVoteAverage(voteAverage);
-        setId(id);
-
-    }
     public String getTitle() {
         return title;
     }

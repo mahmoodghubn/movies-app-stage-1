@@ -1,6 +1,7 @@
 package com.example.popularmoviesstage1;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +12,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.View.OnClickListener;
 
 import java.util.ArrayList;
-
-
 
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewAdapterViewHolder> {
 

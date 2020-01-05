@@ -2,7 +2,6 @@ package com.example.popularmoviesstage1;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
@@ -29,7 +28,6 @@ public class YoutubeVideoAdapter extends RecyclerView.Adapter<YoutubeViewHolder>
     //position to check which position is selected
     private int selectedPosition = 0;
 
-
     YoutubeVideoAdapter(Context context, ArrayList<String> youtubeVideoModelArrayList) {
         this.context = context;
         this.youtubeVideoModelArrayList = youtubeVideoModelArrayList;
@@ -47,12 +45,12 @@ public class YoutubeVideoAdapter extends RecyclerView.Adapter<YoutubeViewHolder>
     public void onBindViewHolder(@NonNull YoutubeViewHolder holder, final int position) {
 
         //if selected position is equal to that mean view is selected so change the cardview color
-        if (selectedPosition == position) {
-            holder.youtubeCardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
-        } else {
+       /* if (selectedPosition == position) {
+            holder.youtubeCardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.filmBoarder));
+        }/* else {
             //if selected position is not equal to that mean view is not selected so change the cardview color to white back again
             holder.youtubeCardView.setCardBackgroundColor(ContextCompat.getColor(context, android.R.color.white));
-        }
+        }*/
 
         /*  initialize the thumbnail image view , we need to pass Developer Key */
         holder.videoThumbnailImageView.initialize(context.getString(R.string.youtube_api), new YouTubeThumbnailView.OnInitializedListener() {
