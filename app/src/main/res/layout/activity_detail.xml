@@ -14,7 +14,7 @@
             android:name="com.google.android.youtube.player.YouTubePlayerFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.core.widget.NestedScrollView
@@ -43,8 +43,8 @@
 
                 <androidx.constraintlayout.widget.Placeholder
                     android:id="@+id/place_holder"
-                    android:layout_width="228dp"
-                    android:layout_height="160dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/place_holder_height"
                     android:background="@null"
                     app:layout_constraintLeft_toRightOf="@id/film_image"
                     app:layout_constraintRight_toRightOf="parent"
@@ -53,7 +53,7 @@
                 <TextView
                     android:id="@+id/empty_view"
                     android:layout_width="wrap_content"
-                    android:layout_height="100dp"
+                    android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="@string/no_data_available"
                     android:visibility="gone"
@@ -61,7 +61,7 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.75" />
+                    app:layout_constraintVertical_bias="0.70" />
 
                 <androidx.core.widget.ContentLoadingProgressBar
                     android:id="@+id/loading_indicator"
@@ -77,17 +77,16 @@
                 <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/film_backdrop"
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:layout_marginBottom="32dp"
+                    android:layout_height="@dimen/backdrop_height"
                     android:contentDescription="@string/film_poster"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/place_holder" />
 
                 <ImageView
                     android:id="@+id/film_image"
-                    android:layout_width="140dp"
-                    android:layout_height="210dp"
-                    android:layout_margin="16dp"
+                    android:layout_width="@dimen/film_poster_width"
+                    android:layout_height="@dimen/film_poster_height"
+                    android:layout_margin="@dimen/film_poster_margin"
                     android:contentDescription="@string/film_poster"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -97,13 +96,12 @@
                     style="@style/film_title_style"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:shadowColor="#18ffff"
+                    android:shadowColor="@color/shadow_text_color"
                     android:shadowDx="3"
                     android:shadowDy="3"
                     android:shadowRadius="6"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:text="title" />
+                    app:layout_constraintTop_toTopOf="parent"/>
 
                 <ImageView
                     android:id="@+id/iv_favButton"
@@ -111,9 +109,9 @@
                     android:layout_height="wrap_content"
                     android:clickable="true"
                     android:focusable="true"
-                    android:paddingStart="16dp"
-                    android:paddingTop="16dp"
-                    android:paddingEnd="16dp"
+                    android:paddingLeft="@dimen/favorite_button_padding"
+                    android:paddingTop="@dimen/favorite_button_padding"
+                    android:paddingRight="@dimen/favorite_button_padding"
                     app:layout_constraintBottom_toTopOf="@id/overview_title"
                     app:layout_constraintRight_toRightOf="@id/vote_average" />
 
@@ -122,17 +120,17 @@
                     style="?android:attr/ratingBarStyleSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="16dp"
+                    android:layout_marginLeft="@dimen/card_view_margin_left"
                     android:numStars="10"
                     app:layout_constraintBottom_toTopOf="@id/film_backdrop"
                     app:layout_constraintLeft_toRightOf="@id/film_image" />
 
                 <TextView
                     android:id="@+id/date"
-                    style="@style/film_data_style"
+                    style="@style/film_date_style"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:shadowColor="#18ffff"
+                    android:shadowColor="@color/shadow_text_color"
                     android:shadowDx="3"
                     android:shadowDy="3"
                     android:shadowRadius="6"
@@ -145,7 +143,6 @@
                     style="@style/film_heads_style"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
                     android:text="@string/overview"
                     app:layout_constrainedWidth="true"
                     app:layout_constraintLeft_toLeftOf="parent"
@@ -153,7 +150,7 @@
 
                 <TextView
                     android:id="@+id/overview"
-                    style="@style/film_data_style2"
+                    style="@style/film_data_style"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:layout_constraintLeft_toLeftOf="parent"
@@ -172,9 +169,6 @@
                     android:id="@+id/recycler_view2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginBottom="8dp"
                     android:orientation="vertical"
                     app:layout_constrainedHeight="true"
                     app:layout_constraintBottom_toBottomOf="parent"

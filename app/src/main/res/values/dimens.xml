@@ -1,16 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="image_margin">16dp</dimen>
+    <dimen name="heads_marginLeft">8dp</dimen>
+    <dimen name="heads_marginRight">8dp</dimen>
+    <dimen name="heads_marginBottom">8dp</dimen>
+    <dimen name="heads_marginTop">16dp</dimen>
+    <dimen name="heads_text_size">16sp</dimen>
+
     <dimen name="title_marginLeft">8dp</dimen>
     <dimen name="title_marginRight">8dp</dimen>
     <dimen name="title_marginBottom">8dp</dimen>
     <dimen name="title_text_size">20sp</dimen>
-    <dimen name="heads_marginLeft">8dp</dimen>
-    <dimen name="heads_marginRight">8dp</dimen>
-    <dimen name="heads_marginBottom">8dp</dimen>
-    <dimen name="heads_text_size">16sp</dimen>
-    <dimen name="data_marginLeft">8dp</dimen>
+
+    <dimen name="date_marginLeft">8dp</dimen>
+    <dimen name="date_marginRight">8dp</dimen>
+    <dimen name="date_marginBottom">8dp</dimen>
+    <dimen name="date_text_size">16sp</dimen>
+
     <dimen name="data_marginRight">8dp</dimen>
     <dimen name="data_marginBottom">8dp</dimen>
     <dimen name="data_text_size">16sp</dimen>
+    <dimen name="data_marginLeft">16dp</dimen>
+
+    <dimen name="video_thumbnail_image_view_width">194dp</dimen>
+    <dimen name="video_thumbnail_image_view_height">120dp</dimen>
+
+    <dimen name="card_view_margin_left">16dp</dimen>
+    <dimen name="card_view_margin_top">16dp</dimen>
+    <dimen name="card_view_margin_bottom">16dp</dimen>
+    <dimen name="card_view_content_padding">8dp</dimen>
+
+    <dimen name="favorite_button_padding">16dp</dimen>
+
+    <dimen name="main_activity_poster_margin">8dp</dimen>
+
+    <dimen name="page_buttons_height">40dp</dimen>
+    <dimen name="page_buttons_width">40dp</dimen>
+
+    <dimen name="film_poster_width">140dp</dimen>
+    <dimen name="film_poster_height">210dp</dimen>
+    <dimen name="film_poster_margin">16dp</dimen>
+    <dimen name="place_holder_height">160dp</dimen>
+    <dimen name="backdrop_height">200dp</dimen>
+
 </resources>

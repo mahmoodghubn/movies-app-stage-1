@@ -2,14 +2,14 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <CheckBoxPreference
         android:defaultValue="false"
-        android:key="home_page"
+        android:key="@string/start_page_preference_key"
         android:summaryOff="no"
         android:summaryOn="yes"
-        android:title="continue where I left off"/>
+        android:title="@string/start_page_preference_title"/>
     <CheckBoxPreference
         android:defaultValue="false"
-        android:key="bright"
+        android:key="@string/theme_mood_preference_key"
         android:summaryOff="not activated"
         android:summaryOn="activated"
-        android:title="activate the bright mood"/>
+        android:title="@string/theme_mood_preference_title"/>
 </PreferenceScreen>

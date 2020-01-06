@@ -29,7 +29,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -77,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         isBrightMood = sharedPreferences.getBoolean("bright", false);
         if (isBrightMood) {
-            setTheme(R.style.AppTheme2);
+            setTheme(R.style.BrightTheme);
         }
         mBinding = DataBindingUtil.setContentView(this,R.layout.activity_main);
         loadingIndicator = findViewById(R.id.loading_indicator);
@@ -493,7 +492,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             if (sharedPreferences.getBoolean("bright", false)) {
                 setTheme(R.style.AppTheme);
             } else {
-                setTheme(R.style.AppTheme2);
+                setTheme(R.style.BrightTheme);
             }
             recreate();
 

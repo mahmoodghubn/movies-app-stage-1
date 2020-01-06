@@ -7,4 +7,9 @@
     <!--color name="colorPrimaryDark">#00574B</color-->
     <color name="colorAccent">#D81B60</color>
     <color name="online">#4caf50</color>
+    <color name="textColorPrimary">#ffffff</color>
+    <color name="brightThemeTextColor">#212121</color>
+    <color name="page_text_view_background_color">#263238</color>
+    <color name="page_text_view_text_color">#ffff00</color>
+    <color name="shadow_text_color">#18ffff</color>
 </resources>

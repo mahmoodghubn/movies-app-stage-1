@@ -12,8 +12,7 @@
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginRight="@dimen/main_activity_poster_margin"
             android:scrollbars="vertical"
             app:layout_constraintBottom_toTopOf="@id/internet_situation"
             app:layout_constraintVertical_weight="1" />
@@ -40,38 +39,35 @@
         <LinearLayout
             android:id="@+id/linear"
             android:layout_width="136dp"
-            android:layout_height="40dp"
+            android:layout_height="@dimen/page_buttons_height"
             android:orientation="horizontal"
             app:layout_constraintBottom_toTopOf="@id/internet_situation"
-            app:layout_constraintEnd_toEndOf="@+id/recycler_view"
-            app:layout_constraintStart_toStartOf="@+id/recycler_view">
+            app:layout_constraintRight_toRightOf="@+id/recycler_view"
+            app:layout_constraintLeft_toLeftOf="@+id/recycler_view">
 
             <ImageButton
                 android:id="@+id/ic_left"
-                android:layout_width="40dp"
+                android:layout_width="@dimen/page_buttons_width"
                 android:layout_height="match_parent"
                 android:layout_marginBottom="8dp"
                 android:src="@drawable/ic_left" />
 
             <TextView
                 android:id="@+id/page_number"
-                android:layout_width="40dp"
+                android:layout_width="@dimen/page_buttons_width"
                 android:layout_height="match_parent"
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginBottom="8dp"
-                android:background="#263238"
+                android:background="@color/page_text_view_background_color"
                 android:gravity="center"
-                android:inputType="number"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"
                 android:scrollbars="horizontal"
                 android:text="1"
-                android:textColor="#ffff00" />
+                android:textColor="@color/page_text_view_text_color" />
 
             <ImageButton
                 android:id="@+id/ic_right"
-                android:layout_width="40dp"
+                android:layout_width="@dimen/page_buttons_width"
                 android:layout_height="match_parent"
                 android:layout_marginBottom="8dp"
                 android:src="@drawable/ic_right" />
@@ -81,13 +77,10 @@
             android:id="@+id/internet_situation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="0dp"
-            android:layout_marginRight="0dp"
-            android:layout_marginBottom="0dp"
             android:textAlignment="center"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="@+id/recycler_view"
-            app:layout_constraintStart_toStartOf="@+id/recycler_view" />
+            app:layout_constraintRight_toRightOf="@+id/recycler_view"
+            app:layout_constraintLeft_toLeftOf="@+id/recycler_view" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
