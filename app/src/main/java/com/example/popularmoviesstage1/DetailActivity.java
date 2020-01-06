@@ -15,19 +15,19 @@ import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.RatingBar;
-import android.widget.TextView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.AsyncTaskLoader;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.popularmoviesstage1.databinding.ActivityDetailBinding;
 import com.example.popularmoviesstage1.model.Film;
 import com.example.popularmoviesstage1.utilities.NetworkUtils;
 import com.google.android.youtube.player.YouTubeInitializationResult;
@@ -48,20 +48,13 @@ import static com.example.popularmoviesstage1.MainActivity.isBrightMood;
 public class DetailActivity extends AppCompatActivity implements ReviewAdapterOnClickHandler, LoaderManager.LoaderCallbacks<DetailActivity.Passed> {
 
     private static final String TAG = DetailActivity.class.getSimpleName();
-
-    ImageView filmImageView;
-    ImageView backdropImageView;
-    TextView title;
-    TextView date;
-    TextView overview;
-    RatingBar voteAverage;
-    private ImageView favoriteFilmButton;
-
+    ActivityDetailBinding mBinding;
     Film film;
     private ReviewAdapter mAdapter;
     Context context;
 
-    private RecyclerView recyclerView;
+    ProgressBar loadingIndicator;
+    ImageView filmImage;
     //youtube player fragment
     private YouTubePlayerFragment youTubePlayerFragment;
     private ArrayList<String> youtubeVideoArrayList;
@@ -74,9 +67,6 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
     InternetBroadCastReceiver internetBroadCastReceiver;
     boolean isDataLoaded;
     boolean isImageLoaded = false;
-    private TextView emptyView;
-    RecyclerView mRecyclerView;
-    View loadingIndicator;
     //this boolean is to forbid the back online statement from appearing when app first launch and when resuming
     boolean whenAppLaunchFirstTime = true;
     Bundle filmBundle;
@@ -92,21 +82,18 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
         }else {
             setTheme(R.style.DetailActivity);
         }
-        setContentView(R.layout.activity_detail);
-        favoriteFilmButton = findViewById(R.id.iv_favButton);
+        mBinding = DataBindingUtil.setContentView(this,R.layout.activity_detail);
+
+        filmImage = findViewById(R.id.film_image);
+        loadingIndicator = findViewById(R.id.loading_indicator);
+
         if (isBrightMood){
-            favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
+            mBinding.ivFavButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
         }else {
-            favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_white_24dp);
+            mBinding.ivFavButton.setImageResource(R.drawable.ic_favorite_border_white_24dp);
         }
 
-        emptyView =  findViewById(R.id.empty_view);
-        loadingIndicator = findViewById(R.id.loading_indicator);
         context = getBaseContext();
-
-
-        filmImageView = findViewById(R.id.film_image);
-        backdropImageView = findViewById(R.id.film_backdrop);
 
         film = (Film) getIntent().getSerializableExtra("FilmClass");
         filmBundle = new Bundle();
@@ -122,13 +109,13 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
 
         bindingData();
 
-        mRecyclerView = findViewById(R.id.rv2);
+
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
-        mRecyclerView.setLayoutManager(linearLayoutManager);
-        mRecyclerView.setHasFixedSize(true);
+        mBinding.recyclerView2.setLayoutManager(linearLayoutManager);
+        mBinding.recyclerView2.setHasFixedSize(true);
         mAdapter = new ReviewAdapter();
-        mRecyclerView.setAdapter(mAdapter);
-        favoriteFilmButton.setOnClickListener(new View.OnClickListener() {
+        mBinding.recyclerView2.setAdapter(mAdapter);
+        mBinding.ivFavButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 setFavorite();
@@ -156,22 +143,18 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
         if (networkInfo != null && networkInfo.isConnected()) {
             Picasso.with(this)
                     .load(filmUrl)
-                    .into(filmImageView);
+                    .into(filmImage);
             Picasso.with(this)
                     .load(backdropUrl)
-                    .into(backdropImageView);
+                    .into(mBinding.filmBackdrop);
             isImageLoaded = true;
         }
 
-        title = findViewById(R.id.film_title);
-        title.setText(film.getTitle());
-        voteAverage = findViewById(R.id.vote_average);
-        voteAverage.setRating(Float.valueOf(film.getVoteAverage()));
 
-        date = findViewById(R.id.date);
-        date.setText(film.getReleaseDate());
-        overview = findViewById(R.id.overview);
-        overview.setText(film.getOverview());
+        mBinding.filmTitle.setText(film.getTitle());
+        mBinding.voteAverage.setRating(Float.valueOf(film.getVoteAverage()));
+        mBinding.date.setText(film.getReleaseDate());
+        mBinding.overview.setText(film.getOverview());
         setUpRecyclerView();
     }
 
@@ -213,12 +196,12 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
      * setup the recycler view here
      */
     private void setUpRecyclerView() {
-        recyclerView = findViewById(R.id.recycler_view);
-        recyclerView.setHasFixedSize(true);
+
+        mBinding.recyclerView.setHasFixedSize(true);
 
         //Horizontal direction recycler view
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        recyclerView.setLayoutManager(linearLayoutManager);
+        mBinding.recyclerView.setLayoutManager(linearLayoutManager);
     }
 
     /**
@@ -226,10 +209,10 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
      */
     private void populateRecyclerView() {
         final YoutubeVideoAdapter adapter = new YoutubeVideoAdapter(this, youtubeVideoArrayList);
-        recyclerView.setAdapter(adapter);
+        mBinding.recyclerView.setAdapter(adapter);
 
         //set click event
-        recyclerView.addOnItemTouchListener(new RecyclerViewOnClickListener(this, new RecyclerViewOnClickListener.OnItemClickListener() {
+        mBinding.recyclerView.addOnItemTouchListener(new RecyclerViewOnClickListener(this, new RecyclerViewOnClickListener.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
 
@@ -246,13 +229,13 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
 
     private void setFavorite() {
         if (!insideDB) {
-            favoriteFilmButton.setImageResource(R.drawable.ic_favorite_solid_24dp);
+            mBinding.ivFavButton.setImageResource(R.drawable.ic_favorite_solid_24dp);
             insertFilmInDatabase(film,context);
         } else {
             if (isBrightMood){
-                favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
+                mBinding.ivFavButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
             }else {
-                favoriteFilmButton.setImageResource(R.drawable.ic_favorite_border_white_24dp);
+                mBinding.ivFavButton.setImageResource(R.drawable.ic_favorite_border_white_24dp);
             }
             deleteFilmFromDatabase(film.getId(),context);
         }
@@ -348,14 +331,14 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
         if (passed != null) {
             isDataLoaded = true;
             if (passed.JSONData != null && passed.JSONData.size() != 0) {
-                recyclerView.setVisibility(View.VISIBLE);
-                emptyView.setVisibility(View.GONE);
+                mBinding.recyclerView.setVisibility(View.VISIBLE);
+                mBinding.emptyView.setVisibility(View.GONE);
                 youtubeVideoArrayList = passed.JSONData;
                 initializeYoutubePlayer();
                 populateRecyclerView();
             } else {
-                recyclerView.setVisibility(View.GONE);
-                emptyView.setVisibility(View.VISIBLE);
+                mBinding.recyclerView.setVisibility(View.GONE);
+                mBinding.emptyView.setVisibility(View.VISIBLE);
 
             }
             if (passed.JSONData2 != null && passed.JSONData2.size() != 0) {
@@ -367,7 +350,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
         }
         if (passed.insideDB) {
             insideDB = passed.insideDB;
-            favoriteFilmButton.setImageResource(R.drawable.ic_favorite_solid_24dp);
+            mBinding.ivFavButton.setImageResource(R.drawable.ic_favorite_solid_24dp);
         }
     }
 
@@ -387,18 +370,17 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
     }
 
     public void showInternetConnection(boolean isConnected) {
-        final TextView online_situation = findViewById(R.id.internet_situation);
 
         if (isConnected && !whenAppLaunchFirstTime) {
-            online_situation.setVisibility(View.VISIBLE);
-            online_situation.setText(R.string.back_online);
-            online_situation.setBackgroundColor(getResources().getColor(R.color.online));
+            mBinding.internetSituation.setVisibility(View.VISIBLE);
+            mBinding.internetSituation.setText(R.string.back_online);
+            mBinding.internetSituation.setBackgroundColor(getResources().getColor(R.color.online));
             CountDownTimer timer = new CountDownTimer(5000, 5000) {
                 public void onTick(long millisUntilFinished) {
                 }
 
                 public void onFinish() {
-                    online_situation.setVisibility(View.GONE);
+                    mBinding.internetSituation.setVisibility(View.GONE);
                 }
             };
             timer.start();
@@ -406,7 +388,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
             if (!isDataLoaded) {
                 LoaderManager loaderManager = LoaderManager.getInstance(this);
                 loadingIndicator.setVisibility(View.VISIBLE);
-                emptyView.setVisibility(View.GONE);
+                mBinding.emptyView.setVisibility(View.GONE);
                 Loader<Passed> loader = loaderManager.getLoader(Integer.parseInt(film.getId()));
                 if (loader == null) {
                     loaderManager.initLoader(Integer.parseInt(film.getId()), filmBundle, this);
@@ -417,16 +399,16 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
             if (!isImageLoaded) {
                 Picasso.with(this)
                         .load(filmUrl)
-                        .into(filmImageView);
+                        .into(filmImage);
                 Picasso.with(this)
                         .load(backdropUrl)
-                        .into(backdropImageView);
+                        .into(mBinding.filmBackdrop);
                 isImageLoaded = true;
             }
         } else if (!isConnected) {
-            online_situation.setVisibility(View.VISIBLE);
-            online_situation.setText(R.string.offline_message);
-            online_situation.setBackgroundColor(getResources().getColor(R.color.cardview_dark_background));
+            mBinding.internetSituation.setVisibility(View.VISIBLE);
+            mBinding.internetSituation.setText(R.string.offline_message);
+            mBinding.internetSituation.setBackgroundColor(getResources().getColor(R.color.cardview_dark_background));
         }
         whenAppLaunchFirstTime = false;
     }

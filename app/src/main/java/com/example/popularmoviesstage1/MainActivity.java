@@ -3,6 +3,7 @@ package com.example.popularmoviesstage1;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.AsyncTaskLoader;
 import androidx.loader.content.Loader;
@@ -24,15 +25,16 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.provider.SearchRecentSuggestions;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.popularmoviesstage1.Data.MySuggestionProvider;
+import com.example.popularmoviesstage1.databinding.ActivityMainBinding;
 import com.example.popularmoviesstage1.model.Film;
 import com.example.popularmoviesstage1.model.PageNumber;
 import com.example.popularmoviesstage1.model.PageNumber.*;
@@ -53,19 +55,13 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     //TODO Try different views, viewgroups and alternative layouts, perform data binding, make your app accessible
     //TODO adding animation
     //TODO adding comments
-    //TODO Implement sharing functionality to allow the user to share the first trailer’s YouTube URL from the movie details screen.
     //TODO beautifying decorate the page buttons
-    ImageButton nextPage;
-    ImageButton previousPage;
-    TextView thisPage;
+    ActivityMainBinding mBinding;
     private FilmAdapter mAdapter;
     public static PageNumber pageNumber;
     IntentFilter internetConnectionIntentFilter;
     InternetBroadCastReceiver internetBroadCastReceiver;
     boolean isDataLoaded;
-    private TextView emptyView;
-    RecyclerView mRecyclerView;
-    View loadingIndicator;
     //this boolean is to forbid the back online statement from appearing when app first launch and when resuming
     boolean whenAppLaunchFirstTime = true;
     private String searchQuery;
@@ -73,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     static boolean isBrightMood;
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
+    ProgressBar loadingIndicator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,16 +79,11 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         if (isBrightMood) {
             setTheme(R.style.AppTheme2);
         }
-        setContentView(R.layout.activity_main);
+        mBinding = DataBindingUtil.setContentView(this,R.layout.activity_main);
+        loadingIndicator = findViewById(R.id.loading_indicator);
+
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
 
-        emptyView = findViewById(R.id.empty_view);
-        loadingIndicator = findViewById(R.id.loading_indicator);
-        thisPage = findViewById(R.id.page_number);
-        //the arrows for the previous and next page
-        previousPage = findViewById(R.id.ic_left);
-        nextPage = findViewById(R.id.ic_right);
-        mRecyclerView = findViewById(R.id.recycler_view);
         pageNumber = new PageNumber(null, null);
 
         editor = sharedPreferences.edit();
@@ -104,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             PageNumber.setSearch_page_number(sharedPreferences.getInt("search", 1));
             PageNumber.setPageSort(sharedPreferences.getString("page_sort", "POPULARITY"));
             searchQuery = sharedPreferences.getString("search_query", "");
-            thisPage.setText(String.valueOf(pageNumber.getCurrentPageNum()));
+            mBinding.pageNumber.setText(String.valueOf(pageNumber.getCurrentPageNum()));
             if (pageNumber.getCurrentPageSort().equals("FAVORITE"))
                 setVisibility(View.VISIBLE, View.GONE, View.GONE, View.GONE, View.GONE, View.GONE);
 
@@ -114,12 +106,12 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         //restoring data after rotation
         if (savedInstanceState != null) {
             pageNumber = (PageNumber) savedInstanceState.getSerializable("page_number");
-            thisPage.setText(String.valueOf(pageNumber.getCurrentPageNum()));
+            mBinding.pageNumber.setText(String.valueOf(pageNumber.getCurrentPageNum()));
         }
 
         RecyclerView.LayoutManager gridLayoutManager = new GridLayoutManager(getApplicationContext(), 2);
-        mRecyclerView.setLayoutManager(gridLayoutManager);
-        mRecyclerView.setHasFixedSize(true);
+        mBinding.recyclerView.setLayoutManager(gridLayoutManager);
+        mBinding.recyclerView.setHasFixedSize(true);
         mAdapter = new FilmAdapter(this);
         //the app becomes life cycle aware
         LoaderManager loaderManager = LoaderManager.getInstance(this);
@@ -131,13 +123,13 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         } else {
             loaderManager.restartLoader(PNom, null, this);
         }
-        mRecyclerView.setAdapter(mAdapter);
-        nextPage.setOnClickListener(new View.OnClickListener() {
+        mBinding.recyclerView.setAdapter(mAdapter);
+        mBinding.icRight.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("DefaultLocale")
             @Override
             public void onClick(View view) {
-                int previousPN = Integer.parseInt(thisPage.getText().toString());
-                thisPage.setText(String.valueOf(++previousPN));
+                int previousPN = Integer.parseInt(mBinding.pageNumber.getText().toString());
+                mBinding.pageNumber.setText(String.valueOf(++previousPN));
                 //calculating the new page number
                 pageNumber = new PageNumber(null, previousPN);
                 //getting the current page
@@ -152,13 +144,13 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                 }
             }
         });
-        previousPage.setOnClickListener(new View.OnClickListener() {
+        mBinding.icLeft.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("DefaultLocale")
             @Override
             public void onClick(View view) {
-                int previousPN = Integer.parseInt(thisPage.getText().toString());
+                int previousPN = Integer.parseInt(mBinding.pageNumber.getText().toString());
                 if (previousPN != 1) {
-                    thisPage.setText(String.valueOf(--previousPN));
+                    mBinding.pageNumber.setText(String.valueOf(--previousPN));
                     pageNumber = new PageNumber(null, previousPN);
                     LoaderManager loaderManager = LoaderManager.getInstance(MainActivity.this);
                     int PNom = pageNumber.getCurrentPageNum();
@@ -189,15 +181,15 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         if (loadingIndicator != null)
             this.loadingIndicator.setVisibility(loadingIndicator);
         if (mRecyclerView != null)
-            this.mRecyclerView.setVisibility(mRecyclerView);
+            this.mBinding.recyclerView.setVisibility(mRecyclerView);
         if (emptyView != null)
-            this.emptyView.setVisibility(emptyView);
+            this.mBinding.emptyView.setVisibility(emptyView);
         if (previousPage != null)
-            this.previousPage.setVisibility(previousPage);
+            this.mBinding.icLeft.setVisibility(previousPage);
         if (nextPage != null)
-            this.nextPage.setVisibility(nextPage);
+            this.mBinding.icRight.setVisibility(nextPage);
         if (thisPage != null)
-            this.thisPage.setVisibility(thisPage);
+            this.mBinding.pageNumber.setVisibility(thisPage);
     }
 
     @Override
@@ -232,7 +224,6 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     @NonNull
     @Override
     public Loader<ArrayList<Film>> onCreateLoader(int id, @Nullable final Bundle args) {
-        Log.i("vvvv",pageNumber.getCurrentPageSort());
         if (!pageNumber.getCurrentPageSort().equals("FAVORITE")) {
             return new AsyncTaskLoader<ArrayList<Film>>(this) {
                 @Override
@@ -390,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         } else {
             loaderManager.restartLoader(PNom, null, this);
         }
-        thisPage.setText(String.valueOf(PNom));
+        mBinding.pageNumber.setText(String.valueOf(PNom));
     }
 
     @Override
@@ -415,7 +406,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             } else {
                 loaderManager.restartLoader(PNom, null, this);
             }
-            thisPage.setText(String.valueOf(PNom));
+            mBinding.pageNumber.setText(String.valueOf(PNom));
             return true;
         } else if (id == R.id.highest_rated && !pageNumber.getCurrentPageSort().equals(NetworkUtils.HIGHEST_RATED)) {
             setVisibility(View.VISIBLE, View.GONE, View.GONE, View.VISIBLE, View.VISIBLE, View.VISIBLE);
@@ -430,7 +421,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             } else {
                 loaderManager.restartLoader(PNom, null, this);
             }
-            thisPage.setText(String.valueOf(PNom));
+            mBinding.pageNumber.setText(String.valueOf(PNom));
             return true;
         } else if (id == R.id.favorite && !pageNumber.getCurrentPageSort().equals("FAVORITE")) {
             setVisibility(View.VISIBLE, View.GONE, View.GONE, View.GONE, View.GONE, View.GONE);
@@ -444,7 +435,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             } else {
                 loaderManager.restartLoader(PNom, null, this);
             }
-            thisPage.setText(String.valueOf(PNom));
+            mBinding.pageNumber.setText(String.valueOf(PNom));
 
         } else if (id == R.id.delete_history) {
             //deleting the history of the search
