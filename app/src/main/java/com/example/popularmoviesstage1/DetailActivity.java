@@ -21,6 +21,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.AsyncTaskLoader;
@@ -43,6 +44,7 @@ import com.example.popularmoviesstage1.ReviewAdapter.ReviewAdapterOnClickHandler
 
 import static android.os.SystemClock.sleep;
 import static com.example.popularmoviesstage1.Data.FilmContract.FilmEntry.*;
+import static com.example.popularmoviesstage1.MainActivity.SHARED_ELEMENT_TRANSITION_EXTRA;
 import static com.example.popularmoviesstage1.MainActivity.isBrightMood;
 
 public class DetailActivity extends AppCompatActivity implements ReviewAdapterOnClickHandler, LoaderManager.LoaderCallbacks<DetailActivity.Passed> {
@@ -96,6 +98,8 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
         context = getBaseContext();
 
         film = (Film) getIntent().getSerializableExtra("FilmClass");
+        ViewCompat.setTransitionName(filmImage, SHARED_ELEMENT_TRANSITION_EXTRA);
+
         filmBundle = new Bundle();
         filmBundle.putString("film", film.getId());
         LoaderManager loaderManager = LoaderManager.getInstance(this);

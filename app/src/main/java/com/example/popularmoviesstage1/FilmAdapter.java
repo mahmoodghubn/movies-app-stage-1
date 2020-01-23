@@ -26,7 +26,7 @@ public class FilmAdapter extends RecyclerView.Adapter<FilmAdapter.FilmAdapterVie
     private final FilmAdapterOnClickHandler mClickHandler;
 
     public interface FilmAdapterOnClickHandler {
-        void onClick(Film filmData);
+        void onClickItem(Film filmData, View view);
     }
 
     FilmAdapter(FilmAdapterOnClickHandler clickHandler) {
@@ -48,7 +48,7 @@ public class FilmAdapter extends RecyclerView.Adapter<FilmAdapter.FilmAdapterVie
         public void onClick(View v) {
             int adapterPosition = getAdapterPosition();
             Film oneFilm = mFilmsData.get(adapterPosition);
-            mClickHandler.onClick(oneFilm);
+            mClickHandler.onClickItem(oneFilm, v);
         }
     }
 

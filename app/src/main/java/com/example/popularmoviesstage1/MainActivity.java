@@ -3,6 +3,7 @@ package com.example.popularmoviesstage1;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.AsyncTaskLoader;
@@ -25,6 +26,7 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.provider.SearchRecentSuggestions;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -55,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     //TODO adding animation
     //TODO adding comments
     //TODO beautifying decorate the page buttons
+    public static String SHARED_ELEMENT_TRANSITION_EXTRA = "sharedElementTransition";
+
     ActivityMainBinding mBinding;
     private FilmAdapter mAdapter;
     public static PageNumber pageNumber;
@@ -78,16 +82,12 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         if (isBrightMood) {
             setTheme(R.style.BrightTheme);
         }
-        mBinding = DataBindingUtil.setContentView(this,R.layout.activity_main);
+        mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         loadingIndicator = findViewById(R.id.loading_indicator);
-
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-
         pageNumber = new PageNumber(null, null);
-
         editor = sharedPreferences.edit();
         inPreferences = sharedPreferences.getBoolean("home_page", true);
-
         if (inPreferences) {
             PageNumber.setPopularity_page_number(sharedPreferences.getInt("popular", 1));
             PageNumber.setHigh_rated_page_number(sharedPreferences.getInt("top_rated", 1));
@@ -100,13 +100,14 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
                 setVisibility(View.VISIBLE, View.GONE, View.GONE, View.GONE, View.GONE, View.GONE);
 
         }
-
         //at first we will start with page number one and popularity type
         //restoring data after rotation
         if (savedInstanceState != null) {
             pageNumber = (PageNumber) savedInstanceState.getSerializable("page_number");
             mBinding.pageNumber.setText(String.valueOf(pageNumber.getCurrentPageNum()));
         }
+
+
 
         RecyclerView.LayoutManager gridLayoutManager = new GridLayoutManager(getApplicationContext(), 2);
         mBinding.recyclerView.setLayoutManager(gridLayoutManager);
@@ -123,6 +124,9 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             loaderManager.restartLoader(PNom, null, this);
         }
         mBinding.recyclerView.setAdapter(mAdapter);
+
+
+
         mBinding.icRight.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("DefaultLocale")
             @Override
@@ -214,10 +218,21 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     }
 
     @Override
-    public void onClick(Film oneFilmData) {
+    public void onClickItem(Film oneFilmData, View view) {
         Intent intent = new Intent(MainActivity.this, DetailActivity.class);
         intent.putExtra("FilmClass", oneFilmData);
-        MainActivity.this.startActivity(intent);
+        if (view.getId() == R.id.iv_item)
+            Log.i(view.getId() + "", "dddd");
+        else
+            Log.i(view.getId() + "", "ddddsss");
+
+        @SuppressWarnings("unchecked")
+        ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                MainActivity.this,
+                view.findViewById(R.id.iv_item),
+                SHARED_ELEMENT_TRANSITION_EXTRA);
+
+        startActivity(intent, optionsCompat.toBundle());
     }
 
     @NonNull

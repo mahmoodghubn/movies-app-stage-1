@@ -11,16 +11,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:adjustViewBounds="true"
-        android:layout_marginLeft="@dimen/main_activity_poster_margin"
-        android:layout_marginBottom="@dimen/main_activity_poster_margin"/>
+        android:layout_marginLeft="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="8dp" />
     <ImageView
         android:contentDescription="@string/favorite_button"
         android:id="@+id/iv_favButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
-        android:padding="@dimen/favorite_button_padding"
-        android:src="@drawable/ic_favorite_border_white_24dp"
+        android:padding="16dp"
+        android:src="@drawable/ic_favorite_border_black_24dp"
         android:focusable="true" />
 
 </FrameLayout>

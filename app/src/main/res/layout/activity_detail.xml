@@ -88,6 +88,8 @@
                     android:layout_height="@dimen/film_poster_height"
                     android:layout_margin="@dimen/film_poster_margin"
                     android:contentDescription="@string/film_poster"
+                    android:transitionName="sharedElementTransition"
+                    android:scaleType="fitXY"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
