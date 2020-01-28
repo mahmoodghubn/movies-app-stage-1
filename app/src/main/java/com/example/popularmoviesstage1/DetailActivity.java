@@ -54,9 +54,6 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
     Film film;
     private ReviewAdapter mAdapter;
     Context context;
-
-    ProgressBar loadingIndicator;
-    ImageView filmImage;
     //youtube player fragment
     private YouTubePlayerFragment youTubePlayerFragment;
     private ArrayList<String> youtubeVideoArrayList;
@@ -85,9 +82,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
             setTheme(R.style.DetailActivity);
         }
         mBinding = DataBindingUtil.setContentView(this,R.layout.activity_detail);
-
-        filmImage = findViewById(R.id.film_image);
-        loadingIndicator = findViewById(R.id.loading_indicator);
+        //ViewCompat.setTransitionName(mBinding.filmPoster, SHARED_ELEMENT_TRANSITION_EXTRA);
 
         if (isBrightMood){
             mBinding.ivFavButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
@@ -98,7 +93,6 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
         context = getBaseContext();
 
         film = (Film) getIntent().getSerializableExtra("FilmClass");
-        ViewCompat.setTransitionName(filmImage, SHARED_ELEMENT_TRANSITION_EXTRA);
 
         filmBundle = new Bundle();
         filmBundle.putString("film", film.getId());
@@ -147,7 +141,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
         if (networkInfo != null && networkInfo.isConnected()) {
             Picasso.with(this)
                     .load(filmUrl)
-                    .into(filmImage);
+                    .into(mBinding.filmPoster);
             Picasso.with(this)
                     .load(backdropUrl)
                     .into(mBinding.filmBackdrop);
@@ -331,7 +325,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
 
     @Override
     public void onLoadFinished(@NonNull Loader<Passed> loader, Passed passed) {
-        loadingIndicator.setVisibility(View.GONE);
+        mBinding.loadingPointer.setVisibility(View.GONE);
         if (passed != null) {
             isDataLoaded = true;
             if (passed.JSONData != null && passed.JSONData.size() != 0) {
@@ -391,7 +385,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
 
             if (!isDataLoaded) {
                 LoaderManager loaderManager = LoaderManager.getInstance(this);
-                loadingIndicator.setVisibility(View.VISIBLE);
+                mBinding.loadingPointer.setVisibility(View.VISIBLE);
                 mBinding.emptyView.setVisibility(View.GONE);
                 Loader<Passed> loader = loaderManager.getLoader(Integer.parseInt(film.getId()));
                 if (loader == null) {
@@ -403,7 +397,7 @@ public class DetailActivity extends AppCompatActivity implements ReviewAdapterOn
             if (!isImageLoaded) {
                 Picasso.with(this)
                         .load(filmUrl)
-                        .into(filmImage);
+                        .into(mBinding.filmPoster);
                 Picasso.with(this)
                         .load(backdropUrl)
                         .into(mBinding.filmBackdrop);

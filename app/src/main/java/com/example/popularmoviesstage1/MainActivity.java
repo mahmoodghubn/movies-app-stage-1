@@ -72,7 +72,6 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     static boolean isBrightMood;
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
-    ProgressBar loadingIndicator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +82,6 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             setTheme(R.style.BrightTheme);
         }
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-        loadingIndicator = findViewById(R.id.loading_indicator);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         pageNumber = new PageNumber(null, null);
         editor = sharedPreferences.edit();
@@ -180,9 +178,9 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
 
-    private void setVisibility(@Nullable Integer loadingIndicator, @Nullable Integer mRecyclerView, @Nullable Integer emptyView, @Nullable Integer previousPage, @Nullable Integer thisPage, @Nullable Integer nextPage) {
-        if (loadingIndicator != null)
-            this.loadingIndicator.setVisibility(loadingIndicator);
+    private void setVisibility(@Nullable Integer loadingPointer, @Nullable Integer mRecyclerView, @Nullable Integer emptyView, @Nullable Integer previousPage, @Nullable Integer thisPage, @Nullable Integer nextPage) {
+        if (loadingPointer != null)
+            this.mBinding.loadingPointer.setVisibility(loadingPointer);
         if (mRecyclerView != null)
             this.mBinding.recyclerView.setVisibility(mRecyclerView);
         if (emptyView != null)
@@ -221,18 +219,16 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     public void onClickItem(Film oneFilmData, View view) {
         Intent intent = new Intent(MainActivity.this, DetailActivity.class);
         intent.putExtra("FilmClass", oneFilmData);
-        if (view.getId() == R.id.iv_item)
-            Log.i(view.getId() + "", "dddd");
-        else
-            Log.i(view.getId() + "", "ddddsss");
 
-        @SuppressWarnings("unchecked")
-        ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                MainActivity.this,
-                view.findViewById(R.id.iv_item),
-                SHARED_ELEMENT_TRANSITION_EXTRA);
+        //@SuppressWarnings("unchecked")
+        //ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(
+        //        MainActivity.this,
+        //        view.findViewById(R.id.iv_item),
+        //       SHARED_ELEMENT_TRANSITION_EXTRA);
 
-        startActivity(intent, optionsCompat.toBundle());
+        //startActivity(intent, optionsCompat.toBundle());
+        MainActivity.this.startActivity(intent);
+
     }
 
     @NonNull
@@ -465,17 +461,16 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
     }
 
     public void showInternetConnection(boolean isConnected) {
-        final TextView online_situation = findViewById(R.id.internet_situation);
         if (isConnected && !whenAppLaunchFirstTime) {
-            online_situation.setVisibility(View.VISIBLE);
-            online_situation.setText(R.string.back_online);
-            online_situation.setBackgroundColor(getResources().getColor(R.color.online));
+            mBinding.internetSituation.setVisibility(View.VISIBLE);
+            mBinding.internetSituation.setText(R.string.back_online);
+            mBinding.internetSituation.setBackgroundColor(getResources().getColor(R.color.online));
             CountDownTimer timer = new CountDownTimer(5000, 5000) {
                 public void onTick(long millisUntilFinished) {
                 }
 
                 public void onFinish() {
-                    online_situation.setVisibility(View.GONE);
+                    mBinding.internetSituation.setVisibility(View.GONE);
                 }
             };
             timer.start();
@@ -494,9 +489,9 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterOnClic
             }
 
         } else if (!isConnected) {
-            online_situation.setVisibility(View.VISIBLE);
-            online_situation.setText(R.string.offline_message);
-            online_situation.setBackgroundColor(getResources().getColor(R.color.cardview_dark_background));
+            mBinding.internetSituation.setVisibility(View.VISIBLE);
+            mBinding.internetSituation.setText(R.string.offline_message);
+            mBinding.internetSituation.setBackgroundColor(getResources().getColor(R.color.cardview_dark_background));
         }
         whenAppLaunchFirstTime = false;
     }

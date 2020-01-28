@@ -36,8 +36,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@null"
+                    android:orientation="horizontal"
                     app:layout_constrainedWidth="true"
-                    app:layout_constraintLeft_toRightOf="@id/film_image"
+                    app:layout_constraintLeft_toRightOf="@id/film_poster"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -46,7 +47,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="@dimen/place_holder_height"
                     android:background="@null"
-                    app:layout_constraintLeft_toRightOf="@id/film_image"
+                    app:layout_constraintLeft_toRightOf="@id/film_poster"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -64,7 +65,7 @@
                     app:layout_constraintVertical_bias="0.70" />
 
                 <androidx.core.widget.ContentLoadingProgressBar
-                    android:id="@+id/loading_indicator"
+                    android:id="@+id/loading_pointer"
                     style="@style/Widget.AppCompat.ProgressBar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -82,14 +83,12 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/place_holder" />
 
-                <ImageView
-                    android:id="@+id/film_image"
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/film_poster"
                     android:layout_width="@dimen/film_poster_width"
                     android:layout_height="@dimen/film_poster_height"
                     android:layout_margin="@dimen/film_poster_margin"
                     android:contentDescription="@string/film_poster"
-                    android:transitionName="sharedElementTransition"
-                    android:scaleType="fitXY"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -125,7 +124,7 @@
                     android:layout_marginLeft="@dimen/card_view_margin_left"
                     android:numStars="10"
                     app:layout_constraintBottom_toTopOf="@id/film_backdrop"
-                    app:layout_constraintLeft_toRightOf="@id/film_image" />
+                    app:layout_constraintLeft_toRightOf="@id/film_poster" />
 
                 <TextView
                     android:id="@+id/date"
